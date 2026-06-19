@@ -1,0 +1,6 @@
+{
+  "name": "Neo Cube",
+  "description": "High-performance speedcubing dashboard and terminal designed for mental flow, featuring virtual solvers, scramble generators, and statistical diagnostics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
