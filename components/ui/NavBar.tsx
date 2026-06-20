@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Timer,
   Trophy,
@@ -16,6 +16,7 @@ import {
   X,
   Shield,
   UserPlus,
+  Search,
 } from 'lucide-react';
 
 const NAV_LINKS = [
@@ -27,8 +28,21 @@ const NAV_LINKS = [
 export default function NavBar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (q) {
+      router.push(`/search/${encodeURIComponent(q)}`);
+      setSearchQuery('');
+      searchRef.current?.blur();
+    }
+  }
 
   const isActive = (href: string) =>
     pathname === href || pathname.startsWith(href + '/');
@@ -49,6 +63,21 @@ export default function NavBar() {
             Cube<span className="text-[#00dbe7]">lelo</span>
           </span>
         </Link>
+
+        {/* Search bar */}
+        <form onSubmit={handleSearch} className="hidden sm:flex items-center mx-4">
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8b949e]" />
+            <input
+              ref={searchRef}
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search CL ID or name…"
+              className="w-44 lg:w-56 pl-7 pr-3 py-1.5 bg-[#161b22] border border-[#30363d] rounded-lg text-xs text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] focus:w-64 transition-all"
+            />
+          </div>
+        </form>
 
         {/* Desktop Nav Links */}
         <div className="hidden md:flex items-center gap-1">

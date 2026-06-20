@@ -30,6 +30,26 @@ const EventSchema = new Schema(
   { _id: true }
 );
 
+/**
+ * Prize tier — rank-based winnings breakup (Dream11-style).
+ * All money values are stored in **paise** (integer) so decimal rupee
+ * amounts (e.g. ₹9.99 → 999) are represented exactly.
+ *
+ *  • mode 'fixed' → every rank in [rankStart, rankEnd] receives `amount`.
+ *  • mode 'pool'  → `poolTotal` is split across the range using `distribution`.
+ */
+const PrizeTierSchema = new Schema(
+  {
+    rankStart:    { type: Number, required: true, min: 1 },
+    rankEnd:      { type: Number, required: true, min: 1 },
+    mode:         { type: String, enum: ['fixed', 'pool'], required: true },
+    amount:       { type: Number, default: 0, min: 0 },   // paise — per-rank reward (mode 'fixed')
+    poolTotal:    { type: Number, default: 0, min: 0 },   // paise — total for range (mode 'pool')
+    distribution: { type: String, enum: ['uniform', 'linear', 'log'], default: 'uniform' },
+  },
+  { _id: false }
+);
+
 // ─── Main schema ──────────────────────────────────────────────────────────────
 
 export interface ICompetition extends Document {
@@ -51,6 +71,20 @@ export interface ICompetition extends Document {
   createdByAdminId?: string;
   events: mongoose.Types.DocumentArray<any>;
   competitorsIds: string[];
+  // ─── Pricing & prizes ───
+  isFree: boolean;
+  baseFee: number;        // paise
+  perEventFee: number;    // paise
+  maxEntries: number;
+  rounds: number;
+  prizes: {
+    rankStart: number;
+    rankEnd: number;
+    mode: 'fixed' | 'pool';
+    amount?: number;        // paise
+    poolTotal?: number;     // paise
+    distribution?: 'uniform' | 'linear' | 'log';
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -79,6 +113,13 @@ const CompetitionSchema = new Schema<ICompetition>(
     createdByAdminId: { type: String },
     events: [EventSchema],
     competitorsIds: [{ type: String }],
+    // ─── Pricing & prizes ───
+    isFree:      { type: Boolean, default: true },
+    baseFee:     { type: Number, default: 0 },   // paise
+    perEventFee: { type: Number, default: 0 },   // paise
+    maxEntries:  { type: Number, default: 100 },
+    rounds:      { type: Number, default: 1 },
+    prizes:      { type: [PrizeTierSchema], default: [] },
   },
   {
     timestamps: true,
@@ -112,6 +153,16 @@ export function mapDbStatus(status: string, registrationOpen: boolean): string {
   return registrationOpen ? 'REGISTRATION_OPEN' : 'REGISTRATION_CLOSED';
 }
 
+/** Sum of all prize tiers in paise (fixed: amount × ranks; pool: poolTotal). */
+function computePrizePool(prizes: any[]): number {
+  if (!Array.isArray(prizes)) return 0;
+  return prizes.reduce((sum, t) => {
+    const count = Math.max(0, (t.rankEnd ?? t.rankStart ?? 0) - (t.rankStart ?? 0) + 1);
+    if (t.mode === 'pool') return sum + (t.poolTotal ?? 0);
+    return sum + (t.amount ?? 0) * count;
+  }, 0);
+}
+
 /**
  * Converts a lean() competition doc to the shape the frontend expects.
  * Call this in every API route before returning JSON.
@@ -142,15 +193,17 @@ export function toApiShape(doc: any) {
     })),
     registrationOpen: doc.registrationOpen,
     status: mapDbStatus(doc.status, doc.registrationOpen),
-    isFree: true,
-    baseFee: 0,
-    perEventFee: 0,
-    maxEntries: 999,
+    isFree: doc.isFree ?? true,
+    baseFee: doc.baseFee ?? 0,
+    perEventFee: doc.perEventFee ?? 0,
+    maxEntries: doc.maxEntries ?? 999,
     currentEntries: (doc.competitorsIds ?? []).length,
     entries: doc.competitorsIds ?? [],
+    prizes: doc.prizes ?? [],
+    prizePool: computePrizePool(doc.prizes ?? []),
     rules: (() => { try { return JSON.parse(doc.rules ?? '[]'); } catch { return []; } })(),
     faqs:  (() => { try { return JSON.parse(doc.faqs  ?? '[]'); } catch { return []; } })(),
-    rounds: 1,
+    rounds: doc.rounds ?? 1,
     currentRound: 1,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,

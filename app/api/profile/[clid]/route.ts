@@ -6,6 +6,7 @@ import { EventBest } from '@/lib/models/EventBest';
 import { PaidParticipant } from '@/lib/models/PaidParticipant';
 import { Result } from '@/lib/models/Result';
 import { Competition } from '@/lib/models/Competition';
+import { computeDailyStreak } from '@/lib/utils/streak';
 
 export async function GET(
   _req: NextRequest,
@@ -22,23 +23,19 @@ export async function GET(
 
     const userId = user.userId;
 
-    const pbs = await EventBest.find({ userId }).lean() as any[];
-
-    const registrations = await PaidParticipant.find({ userId })
-      .sort({ regDateAndTime: -1 })
-      .limit(20)
-      .lean() as any[];
+    const [pbs, registrations, streak] = await Promise.all([
+      EventBest.find({ userId }).lean() as Promise<any[]>,
+      PaidParticipant.find({ userId }).sort({ regDateAndTime: -1 }).limit(20).lean() as Promise<any[]>,
+      computeDailyStreak(userId),
+    ]);
 
     const compIds = registrations.map((r: any) => r.competitionId).filter(Boolean);
-    const competitions = compIds.length > 0
-      ? await Competition.find({ competitionId: { $in: compIds } }).lean() as any[]
-      : [];
+    const [competitions, resultsList] = await Promise.all([
+      compIds.length > 0 ? Competition.find({ competitionId: { $in: compIds } }).lean() as Promise<any[]> : Promise.resolve([]),
+      compIds.length > 0 ? Result.find({ userId, competitionId: { $in: compIds } }).lean() as Promise<any[]> : Promise.resolve([]),
+    ]);
+
     const compMap = new Map(competitions.map((c: any) => [c.competitionId, c]));
-
-    const resultsList = compIds.length > 0
-      ? await Result.find({ userId, competitionId: { $in: compIds } }).lean() as any[]
-      : [];
-
     const resultsByComp = new Map<string, any[]>();
     for (const r of resultsList) {
       const arr = resultsByComp.get(r.competitionId) ?? [];
@@ -64,6 +61,7 @@ export async function GET(
 
     return NextResponse.json({
       user,
+      streak,
       pbs: pbs.map((p: any) => ({
         eventId: p.eventId,
         bestSingle: p.bestSingle,

@@ -11,6 +11,7 @@ import {
   getPuzzleEmoji,
   getStatusLabel,
   getStatusColor,
+  formatPrice,
 } from '@/lib/utils/competition';
 
 // ─── Filter config ────────────────────────────────────────────────────────────
@@ -196,7 +197,7 @@ export default function CompeteLobby() {
                         status: comp.status,
                         rounds: comp.rounds,
                         currentRound: comp.currentRound ?? 1,
-                        prize: comp.prize,
+                        prize: comp.prizePool ? formatPrice(comp.prizePool) : undefined,
                       }}
                       onRegister={() => handleRegister(comp._id)}
                     />

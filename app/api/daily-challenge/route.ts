@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/mongoose';
 import { DailyChallenge, DailyChallengeEntry } from '@/lib/models/DailyChallenge';
+import { computeDailyStreak } from '@/lib/utils/streak';
 
 const MOVES_3x3 = ['R','L','U','D','F','B'];
 const MODS = ["","'","2"];
@@ -42,26 +43,14 @@ export async function GET(req: NextRequest) {
 
     let myEntry = null;
     let streak = 0;
-    if (session?.user?.id) {
+    // Key on CL ID so streaks match the public profile (falls back to id only if absent).
+    const uid = (session?.user as any)?.userId ?? session?.user?.id;
+    if (uid) {
       myEntry = await DailyChallengeEntry.findOne({
         challengeId: String(challenge._id),
-        userId: session.user.id,
+        userId: uid,
       }).lean();
-
-      // Compute streak: consecutive days with submission ending today
-      const d = new Date(todayIST());
-      for (let i = 0; i < 365; i++) {
-        const ds = d.toISOString().split('T')[0];
-        const ch = await DailyChallenge.findOne({ date: ds }).lean();
-        if (!ch) break;
-        const entry = await DailyChallengeEntry.findOne({
-          challengeId: String((ch as any)._id),
-          userId: session.user.id,
-        }).lean();
-        if (!entry) break;
-        streak++;
-        d.setDate(d.getDate() - 1);
-      }
+      streak = await computeDailyStreak(uid);
     }
 
     return NextResponse.json({ challenge, myEntry, streak });
@@ -79,6 +68,7 @@ export async function POST(req: NextRequest) {
 
   const { timeInMs, status, date } = await req.json();
   const targetDate = date ?? todayIST();
+  const uid = (session.user as any).userId ?? session.user.id;
 
   try {
     await connectDB();
@@ -86,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     const existing = await DailyChallengeEntry.findOne({
       challengeId: String(challenge._id),
-      userId: session.user.id,
+      userId: uid,
     });
     if (existing) {
       return NextResponse.json({ error: 'Already submitted today' }, { status: 409 });
@@ -95,7 +85,7 @@ export async function POST(req: NextRequest) {
     const entry = await DailyChallengeEntry.create({
       challengeId: String(challenge._id),
       date: targetDate,
-      userId: session.user.id,
+      userId: uid,
       userName: (session.user as any).name ?? session.user.email,
       timeInMs: typeof timeInMs === 'number' ? timeInMs : undefined,
       status: status ?? 'OK',

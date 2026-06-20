@@ -8,11 +8,30 @@ import {
 import { useSession, signIn } from 'next-auth/react';
 import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
-import { getPuzzleEmoji, getStatusLabel, getStatusColor, Competition } from '@/lib/utils/competition';
+import {
+  getPuzzleEmoji, getStatusLabel, getStatusColor, formatPrice,
+  type Competition, type DistributionFn,
+} from '@/lib/utils/competition';
 
 type CompetitionStatus = Competition['status'];
 
 const PUZZLE_TYPES = ['3x3x3', '2x2x2', '4x4x4', 'OH', 'Pyraminx', 'Megaminx', 'Skewb', 'Square-1'];
+
+const DISTRIBUTIONS: { value: DistributionFn; label: string }[] = [
+  { value: 'uniform', label: 'Uniform (equal split)' },
+  { value: 'linear',  label: 'Linear (top-weighted)' },
+  { value: 'log',     label: 'Logarithmic (steep top)' },
+];
+
+// Prize tier as edited in the form — money kept as rupee strings, converted to paise on submit.
+interface PrizeTierForm {
+  rankStart: string;
+  rankEnd: string;
+  mode: 'fixed' | 'pool';
+  amount: string;       // rupees (mode 'fixed')
+  poolTotal: string;    // rupees (mode 'pool')
+  distribution: DistributionFn;
+}
 
 interface NewCompForm {
   name: string;
@@ -26,16 +45,35 @@ interface NewCompForm {
   isPractice: boolean;
   maxEntries: string;
   rounds: string;
-  prize: string;
+  prizes: PrizeTierForm[];
   description: string;
 }
+
+const emptyPrizeTier: PrizeTierForm = {
+  rankStart: '1', rankEnd: '1', mode: 'fixed', amount: '', poolTotal: '', distribution: 'uniform',
+};
 
 const emptyForm: NewCompForm = {
   name: '', events: ['3x3x3'],
   startDate: '', endDate: '', registrationDeadline: '',
   baseFee: '399', perEventFee: '99',
-  isFree: false, isPractice: false, maxEntries: '64', rounds: '3', prize: '', description: '',
+  isFree: false, isPractice: false, maxEntries: '64', rounds: '3',
+  prizes: [
+    { rankStart: '1', rankEnd: '1', mode: 'fixed', amount: '1000', poolTotal: '', distribution: 'uniform' },
+  ],
+  description: '',
 };
+
+/** Total prize pool (paise) computed from the form's rupee inputs, for live readout. */
+function formPrizePoolPaise(prizes: PrizeTierForm[]): number {
+  return prizes.reduce((sum, p) => {
+    const start = parseInt(p.rankStart) || 1;
+    const end = Math.max(start, parseInt(p.rankEnd) || start);
+    const count = end - start + 1;
+    if (p.mode === 'pool') return sum + Math.round((parseFloat(p.poolTotal) || 0) * 100);
+    return sum + Math.round((parseFloat(p.amount) || 0) * 100) * count;
+  }, 0);
+}
 
 // ─── Status transition map ────────────────────────────────────────────────────
 const NEXT_STATUS: Record<string, { label: string; status: string; color: string }> = {
@@ -102,11 +140,30 @@ export default function AdminPanel() {
     setCompetitions(prev => prev.map(c => c._id === id ? { ...c, status: 'CANCELLED' } : c));
   };
 
+  // ── Prize tier editing ────────────────────────────────────────────────────
+  const addPrizeTier = () =>
+    setForm(f => ({ ...f, prizes: [...f.prizes, { ...emptyPrizeTier }] }));
+  const removePrizeTier = (i: number) =>
+    setForm(f => ({ ...f, prizes: f.prizes.filter((_, idx) => idx !== i) }));
+  const updatePrizeTier = (i: number, patch: Partial<PrizeTierForm>) =>
+    setForm(f => ({ ...f, prizes: f.prizes.map((p, idx) => idx === i ? { ...p, ...patch } : p) }));
+
+  // Rupees → integer paise (decimal-safe; "9.99" → 999, not 900).
+  const toPaise = (rupees: string) => Math.max(0, Math.round((parseFloat(rupees) || 0) * 100));
+
   // ── Create ────────────────────────────────────────────────────────────────
   const handleCreate = async () => {
     if (!form.name || !form.startDate) return;
     setSaving(true);
     try {
+      const prizes = form.prizes.map(p => {
+        const rankStart = Math.max(1, parseInt(p.rankStart) || 1);
+        const rankEnd = Math.max(rankStart, parseInt(p.rankEnd) || rankStart);
+        return p.mode === 'pool'
+          ? { rankStart, rankEnd, mode: 'pool' as const, poolTotal: toPaise(p.poolTotal), distribution: p.distribution }
+          : { rankStart, rankEnd, mode: 'fixed' as const, amount: toPaise(p.amount) };
+      });
+
       const res = await fetch('/api/competitions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,13 +174,13 @@ export default function AdminPanel() {
           startDate: form.startDate,
           endDate: form.endDate || form.startDate,
           registrationDeadline: form.registrationDeadline || undefined,
-          baseFee: form.isFree ? 0 : parseInt(form.baseFee) * 100,   // convert to paise
-          perEventFee: form.isFree ? 0 : parseInt(form.perEventFee) * 100,
+          baseFee: form.isFree ? 0 : toPaise(form.baseFee),       // paise (decimal-safe)
+          perEventFee: form.isFree ? 0 : toPaise(form.perEventFee),
           isFree: form.isFree,
           competitionType: form.isPractice ? 'PRACTICE' : 'STANDARD',
           maxEntries: parseInt(form.maxEntries) || 64,
           rounds: parseInt(form.rounds) || 1,
-          prize: form.prize,
+          prizes,
         }),
       });
       if (res.ok) {
@@ -280,7 +337,9 @@ export default function AdminPanel() {
                         <p className="text-[10px] text-[#8b949e]">
                           {comp.events?.join(', ')} · {comp.rounds} rounds ·{' '}
                           {comp.entries?.length ?? 0}/{comp.maxEntries} entries ·{' '}
-                          {comp.isFree ? 'FREE' : `₹${Math.round(comp.baseFee / 100)}`}
+                          {comp.isFree ? 'FREE' : formatPrice(comp.baseFee)}
+                          {!comp.isFree && comp.perEventFee > 0 && ` + ${formatPrice(comp.perEventFee)}/event`}
+                          {!!comp.prizePool && comp.prizePool > 0 && ` · 🏆 ${formatPrice(comp.prizePool)}`}
                         </p>
                         <p className="text-[10px] text-[#8b949e] mt-0.5">
                           {new Date(comp.startDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
@@ -399,14 +458,14 @@ export default function AdminPanel() {
           {!form.isFree && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-[#8b949e] mb-1 block">Base Fee (Rs.)</label>
-                <input type="number" value={form.baseFee}
+                <label className="text-xs text-[#8b949e] mb-1 block">Base Fee (₹)</label>
+                <input type="number" min="0" step="0.01" value={form.baseFee}
                   onChange={e => setForm(f => ({ ...f, baseFee: e.target.value }))}
                   className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
               </div>
               <div>
-                <label className="text-xs text-[#8b949e] mb-1 block">Per Event Fee (Rs.)</label>
-                <input type="number" value={form.perEventFee}
+                <label className="text-xs text-[#8b949e] mb-1 block">Per Event Fee (₹)</label>
+                <input type="number" min="0" step="0.01" value={form.perEventFee}
                   onChange={e => setForm(f => ({ ...f, perEventFee: e.target.value }))}
                   className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
               </div>
@@ -426,6 +485,83 @@ export default function AdminPanel() {
                 className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
             </div>
           </div>
+          {/* ── Prize distribution (rank-based winnings breakup) ── */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs text-[#8b949e]">🏆 Prize Distribution</label>
+              <span className="text-[10px] font-mono text-amber-400">
+                Pool: {formatPrice(formPrizePoolPaise(form.prizes))}
+              </span>
+            </div>
+            <div className="space-y-2">
+              {form.prizes.map((p, i) => (
+                <div key={i} className="bg-[#161b22] border border-[#30363d] rounded-xl p-2.5 space-y-2">
+                  <div className="flex items-center gap-2">
+                    {/* Mode toggle */}
+                    <div className="flex rounded-lg overflow-hidden border border-[#30363d] text-[11px] shrink-0">
+                      {(['fixed', 'pool'] as const).map(m => (
+                        <button key={m} type="button"
+                          onClick={() => updatePrizeTier(i, { mode: m })}
+                          className={`px-2 py-1 transition-all ${
+                            p.mode === m ? 'bg-[#00dbe7]/20 text-[#00dbe7]' : 'text-[#8b949e] hover:text-white'
+                          }`}>
+                          {m === 'fixed' ? 'Fixed' : 'Pool'}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Rank range */}
+                    <div className="flex items-center gap-1 text-[11px] text-[#8b949e]">
+                      <span>Rank</span>
+                      <input type="number" min="1" value={p.rankStart}
+                        onChange={e => updatePrizeTier(i, { rankStart: e.target.value })}
+                        className="w-12 px-1.5 py-1 bg-[#0b0e11] border border-[#30363d] rounded text-center text-white focus:outline-none focus:border-[#00dbe7]" />
+                      <span>–</span>
+                      <input type="number" min="1" value={p.rankEnd}
+                        onChange={e => updatePrizeTier(i, { rankEnd: e.target.value })}
+                        className="w-12 px-1.5 py-1 bg-[#0b0e11] border border-[#30363d] rounded text-center text-white focus:outline-none focus:border-[#00dbe7]" />
+                    </div>
+                    <button type="button" onClick={() => removePrizeTier(i)}
+                      className="ml-auto p-1 text-[#8b949e] hover:text-red-400 transition-all" aria-label="Remove tier">
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {p.mode === 'fixed' ? (
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <span className="text-[11px] text-[#8b949e]">₹ each</span>
+                        <input type="number" min="0" step="0.01" value={p.amount}
+                          onChange={e => updatePrizeTier(i, { amount: e.target.value })}
+                          placeholder="Amount per rank"
+                          className="flex-1 px-2 py-1 bg-[#0b0e11] border border-[#30363d] rounded-lg text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-1.5 flex-1">
+                          <span className="text-[11px] text-[#8b949e]">₹ total</span>
+                          <input type="number" min="0" step="0.01" value={p.poolTotal}
+                            onChange={e => updatePrizeTier(i, { poolTotal: e.target.value })}
+                            placeholder="Total for range"
+                            className="flex-1 px-2 py-1 bg-[#0b0e11] border border-[#30363d] rounded-lg text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
+                        </div>
+                        <select value={p.distribution}
+                          onChange={e => updatePrizeTier(i, { distribution: e.target.value as DistributionFn })}
+                          className="px-2 py-1 bg-[#0b0e11] border border-[#30363d] rounded-lg text-[11px] text-white focus:outline-none focus:border-[#00dbe7]">
+                          {DISTRIBUTIONS.map(d => (
+                            <option key={d.value} value={d.value}>{d.label}</option>
+                          ))}
+                        </select>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button type="button" onClick={addPrizeTier}
+              className="mt-2 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[#00dbe7] border border-[#00dbe7]/30 hover:bg-[#00dbe7]/10 transition-all">
+              <Plus size={12} /> Add prize tier
+            </button>
+          </div>
+
           <div>
             <label className="text-xs text-[#8b949e] mb-1 block">Description</label>
             <textarea value={form.description}

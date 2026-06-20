@@ -5,13 +5,14 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Shield, Trophy, Users, CreditCard, FileText,
-  Database, AlertCircle, Loader2, TrendingUp, Clock
+  Database, AlertCircle, Loader2, TrendingUp, Tag
 } from 'lucide-react';
 
 const NAV = [
   { href: '/admin/competitions', icon: Trophy, label: 'Competitions', color: 'text-amber-400', bg: 'bg-amber-400/10 border-amber-400/20', desc: 'Create, manage, run rounds' },
   { href: '/admin/users', icon: Users, label: 'Users', color: 'text-[#00dbe7]', bg: 'bg-[#00dbe7]/10 border-[#00dbe7]/20', desc: 'Search, ban, manage roles' },
   { href: '/admin/payments', icon: CreditCard, label: 'Payments', color: 'text-emerald-400', bg: 'bg-emerald-400/10 border-emerald-400/20', desc: 'Transaction log, revenue' },
+  { href: '/admin/promos', icon: Tag, label: 'Promo Codes', color: 'text-pink-400', bg: 'bg-pink-400/10 border-pink-400/20', desc: 'Discount codes, usage limits' },
   { href: '/admin/content', icon: FileText, label: 'Content', color: 'text-[#a3fa00]', bg: 'bg-[#a3fa00]/10 border-[#a3fa00]/20', desc: 'Banners, announcements' },
   { href: '/admin/migration', icon: Database, label: 'Migration', color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20', desc: 'Import users, claim status' },
   { href: '/compete/admin', icon: Shield, label: 'Legacy Admin', color: 'text-[#8b949e]', bg: 'bg-[#161b22] border-[#30363d]', desc: 'Original competition panel' },

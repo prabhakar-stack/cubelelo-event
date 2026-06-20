@@ -2,8 +2,9 @@
 
 import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Trophy, Loader2, Medal } from 'lucide-react';
+import { ChevronLeft, Trophy, Loader2, Download } from 'lucide-react';
 import { getPuzzleEmoji } from '@/lib/utils/competition';
+import { useSession } from 'next-auth/react';
 
 const DNF_SENTINEL = 360000;
 
@@ -39,10 +40,12 @@ interface ResultEntry {
 
 export default function CompetitionResults({ params }: PageParams) {
   const { id } = use(params);
+  const { data: session } = useSession();
   const [competition, setCompetition] = useState<any>(null);
   const [results, setResults] = useState<ResultEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<string>('');
+  const [certLoading, setCertLoading] = useState(false);
 
   useEffect(() => {
     fetch(`/api/competitions/${id}`)
@@ -86,6 +89,29 @@ export default function CompetitionResults({ params }: PageParams) {
   const compName = competition.name ?? competition.competitionName;
   const events: any[] = competition.events ?? [];
   const puzzleType = competition.puzzleType ?? selectedEvent ?? '3x3x3';
+  const compId = competition.competitionId ?? id;
+
+  async function downloadCertificate() {
+    if (!session) return;
+    setCertLoading(true);
+    try {
+      const res = await fetch(`/api/competitions/${compId}/certificate?event=${encodeURIComponent(selectedEvent)}`);
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error ?? 'Certificate not available');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `certificate-${compId}-${selectedEvent}.svg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setCertLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0b0e11] text-white">
@@ -99,10 +125,20 @@ export default function CompetitionResults({ params }: PageParams) {
         {/* Header */}
         <div className="flex items-start gap-4 mb-8">
           <div className="text-4xl">{getPuzzleEmoji(puzzleType)}</div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-black text-white mb-1">{compName}</h1>
             <p className="text-sm text-[#8b949e]">Official Results</p>
           </div>
+          {session && (
+            <button
+              onClick={downloadCertificate}
+              disabled={certLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-sm font-semibold hover:bg-[#00dbe7]/20 transition-all disabled:opacity-50 flex-shrink-0"
+            >
+              {certLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              My Certificate
+            </button>
+          )}
         </div>
 
         {/* Podium for top 3 */}

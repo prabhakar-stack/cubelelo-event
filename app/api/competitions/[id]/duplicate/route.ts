@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, isAuthError } from '@/lib/adminAuth';
 import { connectDB } from '@/lib/mongoose';
-import { Competition } from '@/lib/models/Competition';
+import { Competition, toApiShape } from '@/lib/models/Competition';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -35,21 +35,21 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     competitionId: newCompId,
     competitionName: `Copy of ${source.competitionName ?? source.name ?? 'Competition'}`,
     description: source.description ?? '',
-    status: 'DRAFT',
+    // Clone starts as an unpublished draft: 'upcoming' + registration closed, dates reset.
+    status: 'upcoming',
+    registrationOpen: false,
     competitionType: source.competitionType ?? 'STANDARD',
     events: cleanEvents,
-    fee: source.fee ?? 0,
+    // Preserve pricing & prize configuration (all money in paise).
+    isFree: source.isFree ?? true,
+    baseFee: source.baseFee ?? 0,
     perEventFee: source.perEventFee ?? 0,
-    isFree: source.isFree ?? false,
     maxEntries: source.maxEntries ?? 100,
     rounds: source.rounds ?? 1,
-    prize: source.prize ?? '',
+    prizes: source.prizes ?? [],
     rules: source.rules ?? '',
     competitorsIds: [],
-    startDate: null,
-    endDate: null,
-    registrationDeadline: null,
   });
 
-  return NextResponse.json({ ok: true, competition: newComp }, { status: 201 });
+  return NextResponse.json({ ok: true, competition: toApiShape(newComp.toObject()) }, { status: 201 });
 }

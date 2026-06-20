@@ -6,13 +6,14 @@
  * Body: { razorpay_order_id, razorpay_payment_id, razorpay_signature, eventIds }
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/mongoose';
 import { Order } from '@/lib/models/Order';
 import { PaidParticipant } from '@/lib/models/PaidParticipant';
 import { Competition } from '@/lib/models/Competition';
 import { User } from '@/lib/models/User';
+import { PromoCode } from '@/lib/models/PromoCode';
 
 function nowIST(): string {
   const d = new Date();
@@ -50,7 +51,11 @@ export async function POST(req: NextRequest) {
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 
-    if (expectedSig !== razorpay_signature) {
+    // Constant-time comparison to avoid signature timing leaks.
+    const expBuf = Buffer.from(expectedSig, 'utf8');
+    const gotBuf = Buffer.from(String(razorpay_signature), 'utf8');
+    const sigValid = expBuf.length === gotBuf.length && timingSafeEqual(expBuf, gotBuf);
+    if (!sigValid) {
       return NextResponse.json({ error: 'Payment signature invalid' }, { status: 400 });
     }
 
@@ -97,6 +102,14 @@ export async function POST(req: NextRequest) {
       await Competition.updateOne(
         { $or: [{ competitionId: order.compId }, { _id: order.compId }] },
         { $addToSet: { competitorsIds: order.userId } }
+      );
+    }
+
+    // Track promo usage from the stored order (never trust the client here).
+    if (order.promoCode && order.userId) {
+      await PromoCode.updateOne(
+        { code: order.promoCode.toString().toUpperCase().trim(), usedBy: { $ne: order.userId } },
+        { $inc: { usedCount: 1 }, $addToSet: { usedBy: order.userId } }
       );
     }
 

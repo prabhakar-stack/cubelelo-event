@@ -88,6 +88,7 @@ export async function PATCH(req: NextRequest) {
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const email = session.user.email.toLowerCase();
 
   const body = await req.json();
   await connectDB();
@@ -122,43 +123,26 @@ export async function PATCH(req: NextRequest) {
   // Handle name update — legacy docs store `name` as a flat string (e.g. "Prabhakar Patel").
   // MongoDB will throw PathNotViable if we try `$set: { "name.firstName": ... }` on a string field.
   // Solution: always replace `name` as a whole object.
-  const wantsNameUpdate = body.firstName !== undefined || body.lastName !== undefined;
-  if (wantsNameUpdate) {
-    // Fetch current doc to read the existing name value before overwriting
-    const existing = await User.findOne(
-      { email: session.user.email.toLowerCase() },
-      { name: 1 }
-    ).lean() as any;
+  const wantFirstName = typeof body.firstName === 'string' ? body.firstName.trim() : undefined;
+  const wantLastName  = typeof body.lastName  === 'string' ? body.lastName.trim()  : undefined;
 
-    // Normalise the existing name — it may be a string or already an object
-    let currentFirst = '';
-    let currentLast  = '';
-    if (typeof existing?.name === 'string') {
-      // Legacy flat string: split on first space
-      const parts = (existing.name as string).trim().split(/\s+/);
-      currentFirst = parts[0] ?? '';
-      currentLast  = parts.slice(1).join(' ');
-    } else if (existing?.name && typeof existing.name === 'object') {
-      currentFirst = existing.name.firstName ?? '';
-      currentLast  = existing.name.lastName  ?? '';
-    }
+  if (wantFirstName !== undefined || wantLastName !== undefined) {
+    // Fetch current name to fill in the unchanged part
+    const existing = await User.findOne({ email }).select('name').lean() as any;
+    const curName  = existing?.name ?? {};
+    const curFirst = typeof curName === 'string' ? curName.split(' ')[0] : (curName.firstName ?? '');
+    const curLast  = typeof curName === 'string' ? curName.split(' ').slice(1).join(' ') : (curName.lastName ?? '');
 
-    // Merge with the new values from the request
     update['name'] = {
-      firstName: body.firstName !== undefined ? body.firstName : currentFirst,
-      lastName:  body.lastName  !== undefined ? body.lastName  : currentLast,
+      firstName: wantFirstName ?? curFirst,
+      lastName:  wantLastName  ?? curLast,
     };
   }
 
-  if (!Object.keys(update).length) {
-    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ ok: true, message: 'Nothing to update' });
   }
 
-  const user = await User.findOneAndUpdate(
-    { email: session.user.email.toLowerCase() },
-    { $set: update },
-    { new: true, select: '-password -token' }
-  ).lean();
-
-  return NextResponse.json({ user });
+  await User.updateOne({ email }, { $set: update });
+  return NextResponse.json({ ok: true });
 }

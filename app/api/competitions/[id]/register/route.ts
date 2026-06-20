@@ -7,12 +7,14 @@
  *          OR { ok: true, message } for free registrations
  */
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/mongoose';
 import { Competition } from '@/lib/models/Competition';
 import { PaidParticipant } from '@/lib/models/PaidParticipant';
 import { Order } from '@/lib/models/Order';
 import { User } from '@/lib/models/User';
+import { PromoCode } from '@/lib/models/PromoCode';
 // Razorpay imported dynamically to allow dev without SDK
 let Razorpay: any;
 try { Razorpay = require('razorpay'); } catch { Razorpay = null; }
@@ -41,14 +43,17 @@ export async function POST(
 
     const { id } = await params;
     const body = await req.json();
-    const { eventIds = [] }: { eventIds: string[] } = body;
+    const { eventIds = [], promoCode }: { eventIds: string[]; promoCode?: string } = body;
 
     await connectDB();
 
     // Load competition
-    const comp = await Competition.findOne(
-      { $or: [{ _id: id.length === 24 ? id : undefined }, { competitionId: id }] }
-    ).lean() as any;
+    const comp = await Competition.findOne({
+      $or: [
+        { competitionId: id },
+        ...(mongoose.isValidObjectId(id) ? [{ _id: id }] : []),
+      ],
+    }).lean() as any;
     if (!comp) return NextResponse.json({ error: 'Competition not found' }, { status: 404 });
     if (!comp.registrationOpen) {
       return NextResponse.json({ error: 'Registration is closed' }, { status: 400 });
@@ -106,7 +111,35 @@ export async function POST(
     // Amount in paise: base fee + per-event fee × events
     const baseFee = comp.baseFee ?? 0;
     const perEventFee = comp.perEventFee ?? 0;
-    const amountPaise = baseFee + perEventFee * Math.max(eventIds.length, 1);
+    let amountPaise = baseFee + perEventFee * Math.max(eventIds.length, 1);
+
+    // Apply promo code if provided
+    let appliedPromo: any = null;
+    if (promoCode) {
+      const promo = await PromoCode.findOne({
+        code: promoCode.toString().toUpperCase().trim(),
+        active: true,
+      }).lean() as any;
+
+      const isValid =
+        promo &&
+        (!promo.expiresAt || new Date(promo.expiresAt) > new Date()) &&
+        (promo.maxUses === 0 || promo.usedCount < promo.maxUses) &&
+        (!promo.competitionId || promo.competitionId === compId) &&
+        (!promo.minAmount || amountPaise >= promo.minAmount) &&
+        !promo.usedBy?.includes(userId);
+
+      if (isValid) {
+        let discount = 0;
+        if (promo.type === 'percent') {
+          discount = Math.floor((amountPaise * promo.value) / 100);
+        } else {
+          discount = promo.value * 100;
+        }
+        amountPaise = Math.max(0, amountPaise - discount);
+        appliedPromo = promo;
+      }
+    }
 
     const receipt = `order_${Date.now()}_${Math.floor(Math.random() * 999999)}`;
     const rzpOrder = await razorpay.orders.create({
@@ -125,6 +158,7 @@ export async function POST(
       amount: String(amountPaise),
       receipt,
       status: 'created',
+      promoCode: appliedPromo?.code ?? null,
     });
 
     return NextResponse.json({
@@ -133,7 +167,7 @@ export async function POST(
       currency: 'INR',
       keyId,
       name: comp.competitionName,
-      description: `Registration — ${comp.competitionName}`,
+      description: `Registration \u2014 ${comp.competitionName}`,
       prefill: { name: user.name?.firstName, email: user.email },
     });
   } catch (err) {
