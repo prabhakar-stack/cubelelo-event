@@ -1,15 +1,14 @@
 /**
  * Mongoose connection — used for all Cubelelo data models.
  * Caches the connection across Next.js hot-reloads in development.
+ *
+ * Fails gracefully when MONGODB_URI is unset so the module can be
+ * imported without crashing the Lambda cold-start.
  */
 
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
-
-if (!MONGODB_URI) {
-  throw new Error('MONGODB_URI is not defined in environment variables');
-}
+const MONGODB_URI = process.env.MONGODB_URI ?? '';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -23,6 +22,10 @@ if (!cached) {
 }
 
 export async function connectDB() {
+  if (!MONGODB_URI) {
+    throw new Error('[mongoose] MONGODB_URI is not defined — set it in your environment variables.');
+  }
+
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {

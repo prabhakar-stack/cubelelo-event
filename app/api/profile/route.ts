@@ -21,6 +21,12 @@ export async function GET() {
     .lean() as any;
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
+  // Normalise legacy flat-string name field
+  if (typeof user.name === 'string') {
+    const parts = (user.name as string).trim().split(/\s+/);
+    user.name = { firstName: parts[0] ?? '', lastName: parts.slice(1).join(' ') };
+  }
+
   const userId = user.userId;
 
   const pbs = await EventBest.find({ userId }).lean() as any[];
@@ -112,8 +118,37 @@ export async function PATCH(req: NextRequest) {
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
   }
-  if (body.firstName !== undefined) update['name.firstName'] = body.firstName;
-  if (body.lastName !== undefined) update['name.lastName'] = body.lastName;
+
+  // Handle name update — legacy docs store `name` as a flat string (e.g. "Prabhakar Patel").
+  // MongoDB will throw PathNotViable if we try `$set: { "name.firstName": ... }` on a string field.
+  // Solution: always replace `name` as a whole object.
+  const wantsNameUpdate = body.firstName !== undefined || body.lastName !== undefined;
+  if (wantsNameUpdate) {
+    // Fetch current doc to read the existing name value before overwriting
+    const existing = await User.findOne(
+      { email: session.user.email.toLowerCase() },
+      { name: 1 }
+    ).lean() as any;
+
+    // Normalise the existing name — it may be a string or already an object
+    let currentFirst = '';
+    let currentLast  = '';
+    if (typeof existing?.name === 'string') {
+      // Legacy flat string: split on first space
+      const parts = (existing.name as string).trim().split(/\s+/);
+      currentFirst = parts[0] ?? '';
+      currentLast  = parts.slice(1).join(' ');
+    } else if (existing?.name && typeof existing.name === 'object') {
+      currentFirst = existing.name.firstName ?? '';
+      currentLast  = existing.name.lastName  ?? '';
+    }
+
+    // Merge with the new values from the request
+    update['name'] = {
+      firstName: body.firstName !== undefined ? body.firstName : currentFirst,
+      lastName:  body.lastName  !== undefined ? body.lastName  : currentLast,
+    };
+  }
 
   if (!Object.keys(update).length) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
