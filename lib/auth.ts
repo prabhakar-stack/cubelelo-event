@@ -123,11 +123,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
             token.picture = dbUser.profilePicture ?? token.picture;
           }
-          // Force admin for known admin emails
-          if (ADMIN_EMAILS.includes(token.email ?? '')) token.role = 'admin';
         } catch (err) {
           console.error('[auth] jwt callback DB lookup error:', err);
         }
+      }
+
+      // ── Always enforce admin role by email — runs on every JWT issue/refresh ──
+      // This ensures admin access even if the DB user doc has role='user',
+      // or if the user signed in via Google (where role isn't in the OAuth profile).
+      if (ADMIN_EMAILS.includes(token.email ?? '')) {
+        token.role = 'admin';
       }
 
       return token;
