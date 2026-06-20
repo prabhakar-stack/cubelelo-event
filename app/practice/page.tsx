@@ -98,18 +98,18 @@ export default function PracticePage() {
   const localMean = localSolves.length ? Math.round(localSolves.reduce((a, s) => a + s.time, 0) / localSolves.length) : null;
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
-      <div className="bg-[#0d1117] border-b border-[#21262d] px-4 py-4">
+    <div className="min-h-screen bg-bg text-fg">
+      <div className="bg-surface border-b border-line px-4 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
-            <Dumbbell size={18} className="text-[#a3fa00]" />
-            <h1 className="text-xl font-black text-white">Practice Hub</h1>
+            <Dumbbell size={18} className="text-lime" />
+            <h1 className="text-xl font-black text-fg">Practice Hub</h1>
           </div>
           <div className="flex gap-2">
             <Link href="/daily-challenge" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-orange-500/30 text-xs font-medium text-orange-400 hover:bg-orange-500/10 transition-all">
               <Calendar size={13} /> Daily Challenge
             </Link>
-            <Link href="/timer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#30363d] text-xs font-medium text-[#8b949e] hover:text-white transition-all">
+            <Link href="/timer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-line-strong text-xs font-medium text-muted hover:text-fg transition-all">
               <Clock size={13} /> Full Timer
             </Link>
           </div>
@@ -124,21 +124,21 @@ export default function PracticePage() {
 
             {/* Overall stats */}
             {session?.user?.id && (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-3">
+              <div className="bg-surface border border-line rounded-2xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e]">All-Time Stats</p>
-                  <button onClick={fetchDbSolves} className="text-[#8b949e] hover:text-white transition-colors">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted">All-Time Stats</p>
+                  <button onClick={fetchDbSolves} className="text-muted hover:text-fg transition-colors">
                     <RefreshCw size={12} className={dbLoading ? 'animate-spin' : ''} />
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="text-center py-2 bg-[#161b22] rounded-xl">
-                    <p className="text-[10px] text-[#8b949e]">Total Solves</p>
-                    <p className="font-mono font-bold text-lg text-white">{totalSolves}</p>
+                  <div className="text-center py-2 bg-elevated rounded-xl">
+                    <p className="text-[10px] text-muted">Total Solves</p>
+                    <p className="font-mono font-bold text-lg text-fg">{totalSolves}</p>
                   </div>
-                  <div className="text-center py-2 bg-[#161b22] rounded-xl">
-                    <p className="text-[10px] text-[#8b949e]">Practice Time</p>
-                    <p className="font-mono font-bold text-sm text-white">
+                  <div className="text-center py-2 bg-elevated rounded-xl">
+                    <p className="text-[10px] text-muted">Practice Time</p>
+                    <p className="font-mono font-bold text-sm text-fg">
                       {practiceHours}h {practiceMinutes}m
                     </p>
                   </div>
@@ -148,19 +148,19 @@ export default function PracticePage() {
 
             {/* PBs per event */}
             {session?.user?.id && Object.keys(pbByEvent).length > 0 && (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-3">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] flex items-center gap-1.5">
+              <div className="bg-surface border border-line rounded-2xl p-4 space-y-3">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted flex items-center gap-1.5">
                   <Trophy size={10} className="text-amber-400" /> Personal Bests
                 </p>
                 {Object.entries(pbByEvent).map(([ev, stats]) => (
                   <div key={ev} className="flex items-center justify-between">
                     <div>
-                      <span className="text-xs font-semibold text-white">{ev}</span>
-                      <span className="text-[10px] text-[#8b949e] ml-2">{stats.count} solves</span>
+                      <span className="text-xs font-semibold text-fg">{ev}</span>
+                      <span className="text-[10px] text-muted ml-2">{stats.count} solves</span>
                     </div>
                     <div className="text-right">
                       <p className="font-mono text-xs text-amber-400 font-bold">{formatMs(stats.best)}</p>
-                      {stats.ao5 && <p className="font-mono text-[10px] text-[#8b949e]">ao5 {formatMs(stats.ao5)}</p>}
+                      {stats.ao5 && <p className="font-mono text-[10px] text-muted">ao5 {formatMs(stats.ao5)}</p>}
                     </div>
                   </div>
                 ))}
@@ -169,15 +169,15 @@ export default function PracticePage() {
 
             {/* Sessions */}
             {sessionList.length > 0 && (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-2">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e]">Recent Sessions</p>
+              <div className="bg-surface border border-line rounded-2xl p-4 space-y-2">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted">Recent Sessions</p>
                 {sessionList.map(s => (
                   <div key={s.name} className="flex items-center justify-between py-1">
                     <div>
-                      <p className="text-xs text-white font-medium truncate max-w-[130px]">{s.name}</p>
-                      <p className="text-[10px] text-[#8b949e]">{s.count} solves</p>
+                      <p className="text-xs text-fg font-medium truncate max-w-[130px]">{s.name}</p>
+                      <p className="text-[10px] text-muted">{s.count} solves</p>
                     </div>
-                    <span className="font-mono text-xs text-[#00dbe7]">{s.best ? formatMs(s.best) : '—'}</span>
+                    <span className="font-mono text-xs text-accent">{s.best ? formatMs(s.best) : '—'}</span>
                   </div>
                 ))}
               </div>
@@ -185,8 +185,8 @@ export default function PracticePage() {
 
             {/* Local session quick stats */}
             {localSolves.length > 0 && (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-2">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e]">This Session</p>
+              <div className="bg-surface border border-line rounded-2xl p-4 space-y-2">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-muted">This Session</p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { label: 'Solves', value: String(localSolves.length) },
@@ -194,9 +194,9 @@ export default function PracticePage() {
                     { label: 'Mean', value: localMean ? formatMs(localMean) : '—' },
                     { label: 'Last', value: formatMs(localSolves[0].time) },
                   ].map(({ label, value }) => (
-                    <div key={label} className="text-center py-2 bg-[#161b22] rounded-xl">
-                      <p className="text-[10px] text-[#8b949e]">{label}</p>
-                      <p className="font-mono font-bold text-sm text-white">{value}</p>
+                    <div key={label} className="text-center py-2 bg-elevated rounded-xl">
+                      <p className="text-[10px] text-muted">{label}</p>
+                      <p className="font-mono font-bold text-sm text-fg">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -204,9 +204,9 @@ export default function PracticePage() {
             )}
 
             {!session?.user?.id && (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 text-center space-y-2">
-                <p className="text-xs text-[#8b949e]">Sign in to save your solves and track progress over time.</p>
-                <Link href="/login" className="inline-block px-4 py-1.5 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-xs font-medium hover:bg-[#00dbe7]/20 transition-all">Sign in</Link>
+              <div className="bg-surface border border-line rounded-2xl p-4 text-center space-y-2">
+                <p className="text-xs text-muted">Sign in to save your solves and track progress over time.</p>
+                <Link href="/login" className="inline-block px-4 py-1.5 rounded-xl bg-accent/10 border border-accent/30 text-accent text-xs font-medium hover:bg-accent/20 transition-all">Sign in</Link>
               </div>
             )}
           </div>
@@ -217,17 +217,17 @@ export default function PracticePage() {
               {PUZZLE_TYPES.map(p => (
                 <button key={p} onClick={() => setPuzzleType(p)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold font-mono transition-all ${
-                    puzzleType === p ? 'bg-[#a3fa00] text-black' : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white'
+                    puzzleType === p ? 'bg-lime text-black' : 'bg-elevated text-muted border border-line-strong hover:text-fg'
                   }`}>{p}</button>
               ))}
-              <button onClick={newScramble} className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs text-[#8b949e] border border-[#30363d] hover:text-white transition-all">
+              <button onClick={newScramble} className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs text-muted border border-line-strong hover:text-fg transition-all">
                 <Zap size={11} /> New Scramble
               </button>
             </div>
 
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1.5">Scramble</p>
-              <p className="font-mono text-sm text-white leading-relaxed break-all">{scramble}</p>
+            <div className="bg-surface border border-line rounded-2xl p-4">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-1.5">Scramble</p>
+              <p className="font-mono text-sm text-fg leading-relaxed break-all">{scramble}</p>
             </div>
 
             <div className={`grid sm:grid-cols-2 gap-4 transition-all duration-300 ${timerBlurred ? 'opacity-20 blur-sm pointer-events-none' : ''}`}>
@@ -237,12 +237,12 @@ export default function PracticePage() {
 
             {localSolves.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-xs text-[#8b949e] font-mono uppercase tracking-widest">Recent Solves</p>
+                <p className="text-xs text-muted font-mono uppercase tracking-widest">Recent Solves</p>
                 {localSolves.slice(0, 8).map((s, i) => (
-                  <div key={i} className="flex items-center gap-3 px-3 py-2 bg-[#0d1117] border border-[#21262d] rounded-xl">
-                    <span className="text-[10px] text-[#8b949e] font-mono w-4">{i + 1}</span>
-                    <span className="font-mono text-sm font-bold text-white">{formatMs(s.time)}</span>
-                    <span className="text-[10px] text-[#8b949e] truncate flex-1">{s.scramble.substring(0, 30)}…</span>
+                  <div key={i} className="flex items-center gap-3 px-3 py-2 bg-surface border border-line rounded-xl">
+                    <span className="text-[10px] text-muted font-mono w-4">{i + 1}</span>
+                    <span className="font-mono text-sm font-bold text-fg">{formatMs(s.time)}</span>
+                    <span className="text-[10px] text-muted truncate flex-1">{s.scramble.substring(0, 30)}…</span>
                   </div>
                 ))}
               </div>

@@ -62,8 +62,8 @@ export default function CompetitionCard({ competition, onRegister }: Competition
   const isCompleted = status === 'COMPLETED';
 
   return (
-    <div className={`relative group bg-[#0d1117] border rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-2xl hover:shadow-black/40 hover:-translate-y-0.5 ${
-      isLive ? 'border-red-500/40 shadow-red-500/10 shadow-lg' : 'border-[#21262d] hover:border-[#30363d]'
+    <div className={`relative group bg-surface border rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-2xl hover:shadow-black/40 hover:-translate-y-0.5 ${
+      isLive ? 'border-red-500/40 shadow-red-500/10 shadow-lg' : 'border-line hover:border-line-strong'
     }`}>
       {/* Live indicator */}
       {isLive && (
@@ -79,36 +79,36 @@ export default function CompetitionCard({ competition, onRegister }: Competition
       <div className="p-5">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-[#161b22] border border-[#21262d] flex items-center justify-center text-xl flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-elevated border border-line flex items-center justify-center text-xl flex-shrink-0">
             {getPuzzleEmoji(puzzleType)}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-white text-sm leading-tight truncate pr-8">{name}</h3>
+            <h3 className="font-semibold text-fg text-sm leading-tight truncate pr-8">{name}</h3>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getStatusColor(status)}`}>
                 {getStatusLabel(status)}
               </span>
-              <span className="text-[10px] text-[#8b949e]">
+              <span className="text-[10px] text-muted">
                 {events?.length ? events.join(', ') : puzzleType}
               </span>
-              <span className="text-[10px] text-[#8b949e]">· {rounds} round{rounds !== 1 ? 's' : ''}</span>
+              <span className="text-[10px] text-muted">· {rounds} round{rounds !== 1 ? 's' : ''}</span>
             </div>
           </div>
         </div>
 
         {/* Description */}
         {description && (
-          <p className="text-xs text-[#8b949e] leading-relaxed mb-3 line-clamp-2">{description}</p>
+          <p className="text-xs text-muted leading-relaxed mb-3 line-clamp-2">{description}</p>
         )}
 
         {/* Stats row */}
-        <div className="flex items-center gap-3 text-xs text-[#8b949e] mb-3">
+        <div className="flex items-center gap-3 text-xs text-muted mb-3">
           <span className="flex items-center gap-1">
             <Calendar size={11} />
             {formatDate(startDate)}
           </span>
           {!isLive && !isCompleted && (
-            <span className="flex items-center gap-1 text-[#00dbe7]">
+            <span className="flex items-center gap-1 text-accent">
               <Clock size={11} />
               {getTimeUntil(startDate)}
             </span>
@@ -118,18 +118,18 @@ export default function CompetitionCard({ competition, onRegister }: Competition
         {/* Entry fill bar */}
         <div className="mb-3">
           <div className="flex justify-between items-center mb-1">
-            <span className="flex items-center gap-1 text-[10px] text-[#8b949e]">
+            <span className="flex items-center gap-1 text-[10px] text-muted">
               <Users size={10} />
               {currentEntries}/{maxEntries} registered
             </span>
-            <span className="text-[10px] text-[#8b949e]">
+            <span className="text-[10px] text-muted">
               {spotsLeft > 0 ? `${spotsLeft} spots left` : 'Full'}
             </span>
           </div>
-          <div className="h-1 bg-[#21262d] rounded-full overflow-hidden">
+          <div className="h-1 bg-line rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                fillPercent >= 90 ? 'bg-red-500' : fillPercent >= 70 ? 'bg-amber-500' : 'bg-[#00dbe7]'
+                fillPercent >= 90 ? 'bg-red-500' : fillPercent >= 70 ? 'bg-amber-500' : 'bg-accent'
               }`}
               style={{ width: `${fillPercent}%` }}
             />
@@ -148,7 +148,7 @@ export default function CompetitionCard({ competition, onRegister }: Competition
             {entryFee === 0 ? (
               <span className="text-xs font-bold text-emerald-400">FREE</span>
             ) : (
-              <span className="text-xs font-bold text-white">₹{entryFee}</span>
+              <span className="text-xs font-bold text-fg">₹{entryFee}</span>
             )}
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function CompetitionCard({ competition, onRegister }: Competition
         {isCompleted ? (
           <Link
             href={`/compete/${id}/results`}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-sm font-medium text-[#8b949e] hover:text-white transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-elevated hover:bg-line border border-line-strong text-sm font-medium text-muted hover:text-fg transition-all"
           >
             View Results <ChevronRight size={14} />
           </Link>
@@ -171,14 +171,14 @@ export default function CompetitionCard({ competition, onRegister }: Competition
         ) : canRegister ? (
           <button
             onClick={() => onRegister?.(id)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#00dbe7]/10 hover:bg-[#00dbe7]/20 border border-[#00dbe7]/30 text-sm font-bold text-[#00dbe7] transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-accent/10 hover:bg-accent/20 border border-accent/30 text-sm font-bold text-accent transition-all"
           >
             Register Now <ChevronRight size={14} />
           </button>
         ) : (
           <button
             disabled
-            className="w-full px-4 py-2.5 rounded-xl bg-[#161b22] border border-[#21262d] text-sm text-[#8b949e] cursor-not-allowed"
+            className="w-full px-4 py-2.5 rounded-xl bg-elevated border border-line text-sm text-muted cursor-not-allowed"
           >
             {spotsLeft === 0 ? 'Competition Full' : 'Registration Closed'}
           </button>

@@ -111,45 +111,45 @@ export default function DailyChallengePage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
 
         {/* Header */}
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
-            <h1 className="text-2xl font-black text-white flex items-center gap-2">
+            <h1 className="text-2xl font-black text-fg flex items-center gap-2">
               <Flame className="text-orange-400" size={24} />
               Daily Challenge
             </h1>
-            <p className="text-sm text-[#8b949e] mt-1">{today}</p>
+            <p className="text-sm text-muted mt-1">{today}</p>
           </div>
           {streak > 0 && (
             <div className="flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-2xl">
               <Flame size={18} className="text-orange-400" />
               <span className="font-black text-xl text-orange-400">{streak}</span>
-              <span className="text-sm text-[#8b949e]">day streak</span>
+              <span className="text-sm text-muted">day streak</span>
             </div>
           )}
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <RefreshCw className="animate-spin text-[#8b949e]" size={24} />
+            <RefreshCw className="animate-spin text-muted" size={24} />
           </div>
         ) : !challenge ? (
-          <div className="text-center py-20 text-[#8b949e]">{error || "Today's challenge isn't ready yet."}</div>
+          <div className="text-center py-20 text-muted">{error || "Today's challenge isn't ready yet."}</div>
         ) : (
           <>
             {/* Scramble card */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
+            <div className="bg-surface border border-line rounded-2xl p-5 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1.5">Today's Scramble · 3×3×3</p>
-                  <p className="font-mono text-sm text-white leading-relaxed break-all">{challenge.scramble}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-1.5">Today's Scramble · 3×3×3</p>
+                  <p className="font-mono text-sm text-fg leading-relaxed break-all">{challenge.scramble}</p>
                 </div>
                 <button
                   onClick={() => { navigator.clipboard.writeText(challenge.scramble); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
-                  className="p-2 rounded-lg text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all flex-shrink-0"
+                  className="p-2 rounded-lg text-muted hover:text-fg hover:bg-line transition-all flex-shrink-0"
                 >
                   {copied ? <CheckCircle2 size={14} className="text-emerald-400" /> : <Copy size={14} />}
                 </button>
@@ -161,16 +161,16 @@ export default function DailyChallengePage() {
 
             {/* Timer or result */}
             {myEntry ? (
-              <div className="bg-[#0d1117] border border-emerald-500/30 rounded-2xl p-6 text-center space-y-2">
+              <div className="bg-surface border border-emerald-500/30 rounded-2xl p-6 text-center space-y-2">
                 <CheckCircle2 size={36} className="text-emerald-400 mx-auto" />
-                <p className="text-sm text-[#8b949e]">Your result today</p>
+                <p className="text-sm text-muted">Your result today</p>
                 <p className="font-mono font-black text-4xl text-emerald-400">
                   {formatMs(myEntry.timeInMs ?? 0, myEntry.status)}
                 </p>
-                <p className="text-xs text-[#8b949e]">Come back tomorrow for a new scramble!</p>
+                <p className="text-xs text-muted">Come back tomorrow for a new scramble!</p>
               </div>
             ) : (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
+              <div className="bg-surface border border-line rounded-2xl p-5 space-y-4">
                 {!session && (
                   <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-2 text-xs text-amber-400">
                     <Link href="/login" className="underline">Sign in</Link> to save your result to the leaderboard.
@@ -184,8 +184,8 @@ export default function DailyChallengePage() {
                   />
                 ) : (
                   <div className="space-y-4 text-center">
-                    <p className="text-sm text-[#8b949e]">Your time</p>
-                    <p className="font-mono font-black text-5xl text-white">
+                    <p className="text-sm text-muted">Your time</p>
+                    <p className="font-mono font-black text-5xl text-fg">
                       {pendingStatus === 'DNF' ? 'DNF' : formatMs(solvedMs, pendingStatus)}
                     </p>
                     {/* Penalty */}
@@ -197,7 +197,7 @@ export default function DailyChallengePage() {
                               ? p === 'DNF' ? 'bg-red-500/20 text-red-400 border border-red-500/40'
                                 : p === '+2' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
                                 : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                              : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white'
+                              : 'bg-elevated text-muted border border-line-strong hover:text-fg'
                           }`}
                         >{p}</button>
                       ))}
@@ -205,12 +205,12 @@ export default function DailyChallengePage() {
                     {error && <p className="text-red-400 text-xs">{error}</p>}
                     <div className="flex justify-center gap-3">
                       <button onClick={() => { setTimerState('idle'); setSolvedMs(0); setError(''); }}
-                        className="px-4 py-2 rounded-xl text-sm text-[#8b949e] border border-[#30363d] hover:text-white transition-all">
+                        className="px-4 py-2 rounded-xl text-sm text-muted border border-line-strong hover:text-fg transition-all">
                         Retry
                       </button>
                       {session && (
                         <button onClick={submitResult} disabled={submitting}
-                          className="px-6 py-2 rounded-xl text-sm font-bold bg-[#00dbe7] text-black hover:bg-[#00dbe7]/80 disabled:opacity-50 transition-all">
+                          className="px-6 py-2 rounded-xl text-sm font-bold bg-accent text-black hover:bg-accent/80 disabled:opacity-50 transition-all">
                           {submitting ? 'Submitting...' : 'Submit Result'}
                         </button>
                       )}
@@ -221,31 +221,31 @@ export default function DailyChallengePage() {
             )}
 
             {/* Leaderboard */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
-              <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+            <div className="bg-surface border border-line rounded-2xl p-5">
+              <h2 className="text-sm font-bold text-fg mb-4 flex items-center gap-2">
                 <Trophy size={15} className="text-amber-400" />
                 Today's Leaderboard
-                <span className="text-[#8b949e] font-normal">({leaderboard.length} solves)</span>
+                <span className="text-muted font-normal">({leaderboard.length} solves)</span>
               </h2>
               {leaderboard.length === 0 ? (
-                <p className="text-center text-[#8b949e] text-sm py-8">No submissions yet — be the first!</p>
+                <p className="text-center text-muted text-sm py-8">No submissions yet — be the first!</p>
               ) : (
                 <div className="space-y-1.5">
                   {leaderboard.slice(0, 50).map((entry) => (
                     <div key={entry.userId} className={`flex items-center gap-3 px-3 py-2 rounded-xl ${
-                      entry.rank <= 3 ? 'bg-amber-500/5 border border-amber-500/10' : 'hover:bg-[#161b22]'
+                      entry.rank <= 3 ? 'bg-amber-500/5 border border-amber-500/10' : 'hover:bg-elevated'
                     }`}>
                       <span className={`w-6 text-right font-mono text-xs font-bold flex-shrink-0 ${
                         entry.rank === 1 ? 'text-amber-400' :
                         entry.rank === 2 ? 'text-[#c0c0c0]' :
-                        entry.rank === 3 ? 'text-amber-700' : 'text-[#8b949e]'
+                        entry.rank === 3 ? 'text-amber-700' : 'text-muted'
                       }`}>{entry.rank}</span>
-                      <span className="flex-1 text-sm text-white truncate">{entry.name}</span>
+                      <span className="flex-1 text-sm text-fg truncate">{entry.name}</span>
                       <span className={`font-mono text-sm font-bold ${
                         entry.status === 'DNF' ? 'text-red-400' :
-                        entry.rank === 1 ? 'text-amber-400' : 'text-white'
+                        entry.rank === 1 ? 'text-amber-400' : 'text-fg'
                       }`}>{entry.time}</span>
-                      {entry.rank <= 3 && <Clock size={12} className="text-[#8b949e]" />}
+                      {entry.rank <= 3 && <Clock size={12} className="text-muted" />}
                     </div>
                   ))}
                 </div>

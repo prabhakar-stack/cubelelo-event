@@ -424,9 +424,9 @@ export default function TimerTerminal() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white flex flex-col">
+    <div className="min-h-screen bg-bg text-fg flex flex-col">
       {/* Sub-nav for timer views */}
-      <div className="bg-[#0d1117] border-b border-[#21262d] px-4 sticky top-14 z-30">
+      <div className="bg-surface border-b border-line px-4 sticky top-14 z-30">
         <div className="max-w-7xl mx-auto flex items-center gap-1 overflow-x-auto py-1 scrollbar-hide">
           {navItems.map(({ id, icon: Icon, label }) => (
             <button
@@ -434,8 +434,8 @@ export default function TimerTerminal() {
               onClick={() => setCurrentView(id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                 currentView === id
-                  ? 'bg-[#21262d] text-[#00dbe7]'
-                  : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]/50'
+                  ? 'bg-line text-accent'
+                  : 'text-muted hover:text-fg hover:bg-line/50'
               }`}
             >
               <Icon size={13} />
@@ -445,14 +445,14 @@ export default function TimerTerminal() {
           <div className="ml-auto flex items-center gap-1 flex-shrink-0">
             <button
               onClick={() => setSoundOn(!soundOn)}
-              className="p-1.5 rounded-lg text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all"
+              className="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-line transition-all"
               title={soundOn ? 'Sound On' : 'Sound Off'}
             >
               {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
             </button>
             <button
               onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              className="p-1.5 rounded-lg text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all"
+              className="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-line transition-all"
             >
               <Settings size={14} />
             </button>
@@ -473,8 +473,8 @@ export default function TimerTerminal() {
                   onClick={() => setPuzzleType(pt)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold font-mono transition-all ${
                     puzzleType === pt
-                      ? 'bg-[#00dbe7] text-black'
-                      : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white hover:border-[#8b949e]'
+                      ? 'bg-accent text-black'
+                      : 'bg-elevated text-muted border border-line-strong hover:text-fg hover:border-muted'
                   }`}
                 >
                   {pt}
@@ -482,33 +482,33 @@ export default function TimerTerminal() {
               ))}
               <button
                 onClick={triggerNewScramble}
-                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono text-[#8b949e] hover:text-white border border-[#30363d] hover:border-[#8b949e] transition-all"
+                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono text-muted hover:text-fg border border-line-strong hover:border-muted transition-all"
               >
                 <RefreshCw size={12} />
                 New Scramble
               </button>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-[#8b949e] font-mono">Target:</span>
+                <span className="text-[10px] text-muted font-mono">Target:</span>
                 <input
                   type="text"
                   value={targetTime}
                   onChange={e => setTargetTime(e.target.value)}
                   placeholder="e.g. 15.00"
-                  className="w-20 px-2 py-1 rounded-lg bg-[#161b22] border border-[#30363d] text-xs font-mono text-white placeholder-[#30363d] focus:outline-none focus:border-[#00dbe7]"
+                  className="w-20 px-2 py-1 rounded-lg bg-elevated border border-line-strong text-xs font-mono text-fg placeholder-line-strong focus:outline-none focus:border-accent"
                 />
               </div>
             </div>
 
             {/* Scramble display */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4">
+            <div className="bg-surface border border-line rounded-2xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1.5">Scramble</p>
-                  <p className="font-mono text-sm text-white leading-relaxed break-all">{scramble || 'Generating...'}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-1.5">Scramble</p>
+                  <p className="font-mono text-sm text-fg leading-relaxed break-all">{scramble || 'Generating...'}</p>
                 </div>
                 <button
                   onClick={() => { if (scramble) navigator.clipboard.writeText(scramble); }}
-                  className="p-2 rounded-lg text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all flex-shrink-0"
+                  className="p-2 rounded-lg text-muted hover:text-fg hover:bg-line transition-all flex-shrink-0"
                   title="Copy scramble"
                 >
                   <Copy size={13} />
@@ -528,24 +528,24 @@ export default function TimerTerminal() {
                 {puzzleType === 'BLD' && bldPhase === 'memo' ? (
                   <div className="flex flex-col items-center gap-4 p-8 bg-[#15191e]/80 border border-[#2b3139] rounded-2xl w-full">
                     <div className="text-center">
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1">BLD · Memo Phase</p>
-                      <p className="text-xs text-[#8b949e] mb-4">Study the scramble carefully. Start memo timer when ready.</p>
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-1">BLD · Memo Phase</p>
+                      <p className="text-xs text-muted mb-4">Study the scramble carefully. Start memo timer when ready.</p>
                     </div>
-                    <div className="font-mono font-black text-6xl text-[#a3fa00]">
+                    <div className="font-mono font-black text-6xl text-lime">
                       {bldMemoRunning ? formatTime(bldMemoMs) : '0.000'}
                     </div>
-                    <div className="text-[11px] font-mono uppercase tracking-widest text-[#8b949e]">
+                    <div className="text-[11px] font-mono uppercase tracking-widest text-muted">
                       {bldMemoRunning ? 'Memorizing… press Stop to begin solve' : 'Press Start to begin memorization'}
                     </div>
                     <div className="flex gap-3">
                       {!bldMemoRunning ? (
                         <button onClick={startBldMemo}
-                          className="px-6 py-2.5 rounded-xl bg-[#a3fa00] text-black font-bold text-sm hover:bg-[#a3fa00]/80 transition-all">
+                          className="px-6 py-2.5 rounded-xl bg-lime text-black font-bold text-sm hover:bg-lime/80 transition-all">
                           Start Memo
                         </button>
                       ) : (
                         <button onClick={stopBldMemo}
-                          className="px-6 py-2.5 rounded-xl bg-[#00dbe7] text-black font-bold text-sm hover:bg-[#00dbe7]/80 transition-all">
+                          className="px-6 py-2.5 rounded-xl bg-accent text-black font-bold text-sm hover:bg-accent/80 transition-all">
                           Stop Memo → Begin Solve
                         </button>
                       )}
@@ -554,9 +554,9 @@ export default function TimerTerminal() {
                 ) : (
                   <>
                     {puzzleType === 'BLD' && bldPhase === 'solve' && bldMemoMs > 0 && (
-                      <div className="flex items-center justify-between px-4 py-2 bg-[#a3fa00]/10 border border-[#a3fa00]/20 rounded-xl text-xs font-mono">
-                        <span className="text-[#8b949e]">Memo time</span>
-                        <span className="text-[#a3fa00] font-bold">{formatTime(bldMemoMs)}</span>
+                      <div className="flex items-center justify-between px-4 py-2 bg-lime/10 border border-lime/20 rounded-xl text-xs font-mono">
+                        <span className="text-muted">Memo time</span>
+                        <span className="text-lime font-bold">{formatTime(bldMemoMs)}</span>
                       </div>
                     )}
                     <TimerDisplay
@@ -575,9 +575,9 @@ export default function TimerTerminal() {
                     { label: 'Ao5', value: getAvgN(5) },
                     { label: 'Ao12', value: getAvgN(12) },
                   ].map(({ label, value }) => (
-                    <div key={label} className="bg-[#0d1117] border border-[#21262d] rounded-xl p-3 text-center">
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1">{label}</p>
-                      <p className="font-mono font-bold text-sm text-white">{value}</p>
+                    <div key={label} className="bg-surface border border-line rounded-xl p-3 text-center">
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-1">{label}</p>
+                      <p className="font-mono font-bold text-sm text-fg">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -588,17 +588,17 @@ export default function TimerTerminal() {
             <div className={`transition-all duration-300 ${timerBlurred ? 'opacity-20 blur-sm pointer-events-none' : ''}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-white">
-                    Solves <span className="text-[#8b949e] font-normal">({activeSessionSolves.length})</span>
+                  <h3 className="text-sm font-semibold text-fg">
+                    Solves <span className="text-muted font-normal">({activeSessionSolves.length})</span>
                   </h3>
-                  <span className="text-[9px] text-[#30363d] font-mono ml-2 hidden sm:inline">D=DNF · P=+2 · Z=undo</span>
+                  <span className="text-[9px] text-line-strong font-mono ml-2 hidden sm:inline">D=DNF · P=+2 · Z=undo</span>
                   {/* Cloud save indicator */}
                   {session?.user?.id ? (
                     <span className={`flex items-center gap-1 text-[10px] font-mono transition-all ${
                       saveIndicator === 'saving' ? 'text-amber-400' :
                       saveIndicator === 'saved' ? 'text-emerald-400' :
                       saveIndicator === 'error' ? 'text-red-400' :
-                      'text-[#30363d]'
+                      'text-line-strong'
                     }`}>
                       {saveIndicator === 'saving' ? <RefreshCw size={10} className="animate-spin" /> : <Cloud size={10} />}
                       {saveIndicator === 'saving' && 'Saving...'}
@@ -607,7 +607,7 @@ export default function TimerTerminal() {
                       {saveIndicator === 'idle' && 'Cloud sync on'}
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-[10px] font-mono text-[#30363d]">
+                    <span className="flex items-center gap-1 text-[10px] font-mono text-line-strong">
                       <CloudOff size={10} /> Local only
                     </span>
                   )}
@@ -615,13 +615,13 @@ export default function TimerTerminal() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsManualOpen(true)}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[#8b949e] hover:text-white border border-[#30363d] hover:border-[#8b949e] transition-all"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-muted hover:text-fg border border-line-strong hover:border-muted transition-all"
                   >
                     <Plus size={11} /> Manual
                   </button>
                   <button
                     onClick={exportCSV}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-[#8b949e] hover:text-white border border-[#30363d] hover:border-[#8b949e] transition-all"
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-muted hover:text-fg border border-line-strong hover:border-muted transition-all"
                   >
                     <Download size={11} /> CSV
                   </button>
@@ -640,7 +640,7 @@ export default function TimerTerminal() {
 
               <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
                 {activeSessionSolves.length === 0 ? (
-                  <div className="text-center py-8 text-[#8b949e] text-sm">
+                  <div className="text-center py-8 text-muted text-sm">
                     No solves yet. Hold spacebar to start timing!
                   </div>
                 ) : (
@@ -654,9 +654,9 @@ export default function TimerTerminal() {
                     return (
                       <div
                         key={solve.id}
-                        className="flex flex-wrap items-center gap-3 px-3 py-2 bg-[#0d1117] border border-[#21262d] rounded-xl hover:border-[#30363d] transition-all group"
+                        className="flex flex-wrap items-center gap-3 px-3 py-2 bg-surface border border-line rounded-xl hover:border-line-strong transition-all group"
                       >
-                        <span className="text-[10px] text-[#8b949e] font-mono w-6 text-right flex-shrink-0">
+                        <span className="text-[10px] text-muted font-mono w-6 text-right flex-shrink-0">
                           {activeSessionSolves.length - index}
                         </span>
                         <span className={`font-mono text-sm font-semibold flex-1 ${
@@ -667,39 +667,39 @@ export default function TimerTerminal() {
                             if (targetTime && !isNaN(tMs)) {
                               return solve.timeInMs <= tMs ? 'text-emerald-400' : 'text-red-400';
                             }
-                            return 'text-white';
+                            return 'text-fg';
                           })()
                         }`}>
                           {displayTime}
                         </span>
                         {solve.note && (
-                          <span className="text-[10px] text-[#8b949e] italic truncate max-w-[120px] hidden sm:block">{solve.note}</span>
+                          <span className="text-[10px] text-muted italic truncate max-w-[120px] hidden sm:block">{solve.note}</span>
                         )}
-                        <span className="text-[10px] text-[#8b949e] hidden sm:block truncate max-w-[100px]">
+                        <span className="text-[10px] text-muted hidden sm:block truncate max-w-[100px]">
                           {new Date(solve.timestamp).toLocaleTimeString()}
                         </span>
                         {/* Penalty buttons */}
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => applyPenalty(solve.id, 'OK')}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${solve.status === 'OK' ? 'bg-emerald-500/20 text-emerald-400' : 'text-[#8b949e] hover:text-emerald-400'}`}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${solve.status === 'OK' ? 'bg-emerald-500/20 text-emerald-400' : 'text-muted hover:text-emerald-400'}`}
                           >OK</button>
                           <button
                             onClick={() => applyPenalty(solve.id, '+2')}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${solve.status === '+2' ? 'bg-amber-500/20 text-amber-400' : 'text-[#8b949e] hover:text-amber-400'}`}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${solve.status === '+2' ? 'bg-amber-500/20 text-amber-400' : 'text-muted hover:text-amber-400'}`}
                           >+2</button>
                           <button
                             onClick={() => applyPenalty(solve.id, 'DNF')}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${solve.status === 'DNF' ? 'bg-red-500/20 text-red-400' : 'text-[#8b949e] hover:text-red-400'}`}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${solve.status === 'DNF' ? 'bg-red-500/20 text-red-400' : 'text-muted hover:text-red-400'}`}
                           >DNF</button>
                           <button
                             onClick={() => { setNoteEditId(solve.id); setNoteEditText(solve.note ?? ''); }}
-                            className="px-1.5 py-0.5 rounded text-[10px] font-mono text-[#8b949e] hover:text-[#00dbe7] transition-all"
+                            className="px-1.5 py-0.5 rounded text-[10px] font-mono text-muted hover:text-accent transition-all"
                             title="Add note"
                           >✎</button>
                           <button
                             onClick={() => deleteSolve(solve.id)}
-                            className="p-0.5 text-[#8b949e] hover:text-red-400 transition-colors ml-1"
+                            className="p-0.5 text-muted hover:text-red-400 transition-colors ml-1"
                           >
                             <X size={11} />
                           </button>
@@ -714,10 +714,10 @@ export default function TimerTerminal() {
                               onChange={e => setNoteEditText(e.target.value)}
                               onKeyDown={e => { if (e.key === 'Enter') saveNote(solve.id, noteEditText); if (e.key === 'Escape') setNoteEditId(null); }}
                               placeholder="Add note (Enter to save)"
-                              className="flex-1 px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[11px] text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] font-mono"
+                              className="flex-1 px-2 py-0.5 rounded bg-elevated border border-line-strong text-[11px] text-fg placeholder-muted focus:outline-none focus:border-accent font-mono"
                             />
-                            <button onClick={() => saveNote(solve.id, noteEditText)} className="px-2 py-0.5 rounded bg-[#00dbe7]/10 text-[#00dbe7] text-[10px]">Save</button>
-                            <button onClick={() => setNoteEditId(null)} className="px-2 py-0.5 rounded text-[#8b949e] text-[10px]">✕</button>
+                            <button onClick={() => saveNote(solve.id, noteEditText)} className="px-2 py-0.5 rounded bg-accent/10 text-accent text-[10px]">Save</button>
+                            <button onClick={() => setNoteEditId(null)} className="px-2 py-0.5 rounded text-muted text-[10px]">✕</button>
                           </div>
                         )}
                       </div>
@@ -733,7 +733,7 @@ export default function TimerTerminal() {
         {currentView === 'sessions' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white">Sessions</h2>
+              <h2 className="text-lg font-bold text-fg">Sessions</h2>
               <button
                 onClick={() => {
                   const name = prompt('Session name:');
@@ -741,7 +741,7 @@ export default function TimerTerminal() {
                   const newSession: Session = { id: `session-${getNow()}`, name, created: getNow() };
                   saveSessionsToStorage([...sessions, newSession]);
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-xs font-medium hover:bg-[#00dbe7]/20 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent/10 border border-accent/30 text-accent text-xs font-medium hover:bg-accent/20 transition-all"
               >
                 <Plus size={13} /> New Session
               </button>
@@ -755,19 +755,19 @@ export default function TimerTerminal() {
                     onClick={() => { setActiveSessionId(session.id); localStorage.setItem('neo_cube_active_session_id', session.id); }}
                     className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                       activeSessionId === session.id
-                        ? 'bg-[#00dbe7]/5 border-[#00dbe7]/30'
-                        : 'bg-[#0d1117] border-[#21262d] hover:border-[#30363d]'
+                        ? 'bg-accent/5 border-accent/30'
+                        : 'bg-surface border-line hover:border-line-strong'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-sm text-white">{session.name}</p>
-                        <p className="text-xs text-[#8b949e] mt-0.5">
+                        <p className="font-semibold text-sm text-fg">{session.name}</p>
+                        <p className="text-xs text-muted mt-0.5">
                           Created {new Date(session.created).toLocaleDateString()}
                         </p>
                       </div>
                       {activeSessionId === session.id && (
-                        <span className="text-[10px] font-mono text-[#00dbe7] border border-[#00dbe7]/30 px-2 py-0.5 rounded-full">ACTIVE</span>
+                        <span className="text-[10px] font-mono text-accent border border-accent/30 px-2 py-0.5 rounded-full">ACTIVE</span>
                       )}
                     </div>
                   </div>
@@ -781,13 +781,13 @@ export default function TimerTerminal() {
         {currentView === 'algorithms' && (
           <div className="space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-3">
-              <h2 className="text-lg font-bold text-white">Algorithms Vault</h2>
+              <h2 className="text-lg font-bold text-fg">Algorithms Vault</h2>
               <input
                 type="text"
                 value={algSearch}
                 onChange={e => setAlgSearch(e.target.value)}
                 placeholder="Search algorithms..."
-                className="px-3 py-1.5 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors font-mono"
+                className="px-3 py-1.5 bg-elevated border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors font-mono"
               />
             </div>
             <div className="flex gap-2">
@@ -797,8 +797,8 @@ export default function TimerTerminal() {
                   onClick={() => setActiveAlgCategory(cat)}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold font-mono transition-all ${
                     activeAlgCategory === cat
-                      ? 'bg-[#00dbe7] text-black'
-                      : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white'
+                      ? 'bg-accent text-black'
+                      : 'bg-elevated text-muted border border-line-strong hover:text-fg'
                   }`}
                 >
                   {cat}
@@ -807,7 +807,7 @@ export default function TimerTerminal() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredAlgs.map(alg => (
-                <div key={alg.id} className="bg-[#0d1117] border border-[#21262d] rounded-xl p-4 hover:border-[#30363d] transition-all group">
+                <div key={alg.id} className="bg-surface border border-line rounded-xl p-4 hover:border-line-strong transition-all group">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div>
                       <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
@@ -815,17 +815,17 @@ export default function TimerTerminal() {
                         alg.category === 'OLL' ? 'bg-amber-500/10 text-amber-400' :
                         'bg-emerald-500/10 text-emerald-400'
                       }`}>{alg.category}</span>
-                      <p className="text-xs font-semibold text-white mt-1">{alg.name}</p>
+                      <p className="text-xs font-semibold text-fg mt-1">{alg.name}</p>
                     </div>
                     <button
                       onClick={() => copyAlg(alg)}
-                      className="p-1.5 rounded-lg text-[#8b949e] hover:text-[#00dbe7] hover:bg-[#00dbe7]/10 transition-all opacity-0 group-hover:opacity-100"
+                      className="p-1.5 rounded-lg text-muted hover:text-accent hover:bg-accent/10 transition-all opacity-0 group-hover:opacity-100"
                     >
                       {copiedAlgId === alg.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                     </button>
                   </div>
-                  <p className="font-mono text-[11px] text-[#00dbe7] mb-2 break-all">{alg.sequence}</p>
-                  <p className="text-[10px] text-[#8b949e] leading-relaxed">{alg.description}</p>
+                  <p className="font-mono text-[11px] text-accent mb-2 break-all">{alg.sequence}</p>
+                  <p className="text-[10px] text-muted leading-relaxed">{alg.description}</p>
                 </div>
               ))}
             </div>
@@ -835,7 +835,7 @@ export default function TimerTerminal() {
         {/* ── STATISTICS VIEW ── */}
         {currentView === 'statistics' && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-white">Performance Analytics</h2>
+            <h2 className="text-lg font-bold text-fg">Performance Analytics</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {[
                 { label: 'Total Solves', value: activeSessionSolves.length.toString() },
@@ -843,19 +843,19 @@ export default function TimerTerminal() {
                 { label: 'Session Mean', value: getMean() },
                 { label: 'Ao12', value: getAvgN(12) },
               ].map(({ label, value }) => (
-                <div key={label} className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 text-center">
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-2">{label}</p>
-                  <p className="font-mono font-black text-2xl text-white">{value}</p>
+                <div key={label} className="bg-surface border border-line rounded-2xl p-5 text-center">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-2">{label}</p>
+                  <p className="font-mono font-black text-2xl text-fg">{value}</p>
                 </div>
               ))}
             </div>
             {activeSessionSolves.length > 0 && (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
-                <h3 className="text-sm font-semibold text-white mb-4">Solve History</h3>
+              <div className="bg-surface border border-line rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-fg mb-4">Solve History</h3>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs font-mono">
                     <thead>
-                      <tr className="text-[#8b949e] border-b border-[#21262d]">
+                      <tr className="text-muted border-b border-line">
                         <th className="text-left pb-2 pr-4">#</th>
                         <th className="text-left pb-2 pr-4">Time</th>
                         <th className="text-left pb-2 pr-4">Status</th>
@@ -865,14 +865,14 @@ export default function TimerTerminal() {
                     </thead>
                     <tbody>
                       {[...activeSessionSolves].reverse().map((s, i) => (
-                        <tr key={s.id} className="border-b border-[#21262d]/50 hover:bg-[#161b22] transition-colors">
-                          <td className="py-1.5 pr-4 text-[#8b949e]">{i + 1}</td>
-                          <td className={`py-1.5 pr-4 font-bold ${s.status === 'DNF' ? 'text-red-400' : s.status === '+2' ? 'text-amber-400' : 'text-white'}`}>
+                        <tr key={s.id} className="border-b border-line/50 hover:bg-elevated transition-colors">
+                          <td className="py-1.5 pr-4 text-muted">{i + 1}</td>
+                          <td className={`py-1.5 pr-4 font-bold ${s.status === 'DNF' ? 'text-red-400' : s.status === '+2' ? 'text-amber-400' : 'text-fg'}`}>
                             {s.status === 'DNF' ? 'DNF' : formatTime(s.status === '+2' ? s.timeInMs + 2000 : s.timeInMs)}
                           </td>
-                          <td className="py-1.5 pr-4 text-[#8b949e]">{s.status}</td>
-                          <td className="py-1.5 pr-4 text-[#8b949e]">{new Date(s.timestamp).toLocaleDateString()}</td>
-                          <td className="py-1.5 text-[#8b949e] truncate max-w-[200px]">{s.scramble.substring(0, 40)}...</td>
+                          <td className="py-1.5 pr-4 text-muted">{s.status}</td>
+                          <td className="py-1.5 pr-4 text-muted">{new Date(s.timestamp).toLocaleDateString()}</td>
+                          <td className="py-1.5 text-muted truncate max-w-[200px]">{s.scramble.substring(0, 40)}...</td>
                         </tr>
                       ))}
                     </tbody>
@@ -886,14 +886,14 @@ export default function TimerTerminal() {
         {/* ── TRAINING VIEW ── */}
         {currentView === 'train' && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-white">Training Sandbox</h2>
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-6">
+            <h2 className="text-lg font-bold text-fg">Training Sandbox</h2>
+            <div className="bg-surface border border-line rounded-2xl p-6">
               <div className="mb-4">
-                <label className="text-xs font-mono text-[#8b949e] uppercase tracking-widest mb-2 block">Select Algorithm to Drill</label>
+                <label className="text-xs font-mono text-muted uppercase tracking-widest mb-2 block">Select Algorithm to Drill</label>
                 <select
                   value={trainAlgId}
                   onChange={e => { setTrainAlgId(e.target.value); resetTrainTimer(); }}
-                  className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7] transition-colors"
+                  className="w-full px-3 py-2 bg-elevated border border-line-strong rounded-xl text-sm text-fg focus:outline-none focus:border-accent transition-colors"
                 >
                   {CONSTANT_ALGORITHMS.map(a => (
                     <option key={a.id} value={a.id}>{a.category} · {a.name}</option>
@@ -904,20 +904,20 @@ export default function TimerTerminal() {
               {(() => {
                 const alg = CONSTANT_ALGORITHMS.find(a => a.id === trainAlgId);
                 return alg ? (
-                  <div className="mb-6 p-4 bg-[#161b22] rounded-xl border border-[#30363d]">
-                    <p className="text-xs text-[#8b949e] mb-1">{alg.description}</p>
-                    <p className="font-mono text-sm text-[#00dbe7] font-bold">{alg.sequence}</p>
+                  <div className="mb-6 p-4 bg-elevated rounded-xl border border-line-strong">
+                    <p className="text-xs text-muted mb-1">{alg.description}</p>
+                    <p className="font-mono text-sm text-accent font-bold">{alg.sequence}</p>
                   </div>
                 ) : null;
               })()}
 
               <div className="text-center">
-                <div className="font-mono text-6xl font-black text-white mb-6">
+                <div className="font-mono text-6xl font-black text-fg mb-6">
                   {(trainTimer / 1000).toFixed(2)}
                 </div>
                 <div className="flex items-center justify-center gap-3">
                   {trainState === 'idle' && (
-                    <button onClick={startTrainTimer} className="px-6 py-2.5 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] font-bold text-sm hover:bg-[#00dbe7]/20 transition-all">
+                    <button onClick={startTrainTimer} className="px-6 py-2.5 rounded-xl bg-accent/10 border border-accent/30 text-accent font-bold text-sm hover:bg-accent/20 transition-all">
                       Start
                     </button>
                   )}
@@ -928,17 +928,17 @@ export default function TimerTerminal() {
                   )}
                   {trainState === 'completed' && (
                     <>
-                      <button onClick={startTrainTimer} className="px-6 py-2.5 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] font-bold text-sm hover:bg-[#00dbe7]/20 transition-all">
+                      <button onClick={startTrainTimer} className="px-6 py-2.5 rounded-xl bg-accent/10 border border-accent/30 text-accent font-bold text-sm hover:bg-accent/20 transition-all">
                         Again
                       </button>
-                      <button onClick={resetTrainTimer} className="px-4 py-2.5 rounded-xl bg-[#21262d] text-[#8b949e] text-sm hover:text-white transition-all">
+                      <button onClick={resetTrainTimer} className="px-4 py-2.5 rounded-xl bg-line text-muted text-sm hover:text-fg transition-all">
                         Reset
                       </button>
                     </>
                   )}
                 </div>
                 {trainSolves.length > 0 && (
-                  <div className="mt-4 text-xs text-[#8b949e]">
+                  <div className="mt-4 text-xs text-muted">
                     Best: {Math.min(...trainSolves) < 1000 ? `${Math.min(...trainSolves).toFixed(0)}ms` : `${(Math.min(...trainSolves)/1000).toFixed(2)}s`}
                     {' · '}Attempts: {trainSolves.length}
                   </div>
@@ -951,7 +951,7 @@ export default function TimerTerminal() {
         {/* ── SUPPORT VIEW ── */}
         {currentView === 'support' && (
           <div className="space-y-4 max-w-2xl">
-            <h2 className="text-lg font-bold text-white">Help & Support</h2>
+            <h2 className="text-lg font-bold text-fg">Help & Support</h2>
             <div className="space-y-3">
               {[
                 { q: 'How do I start the timer?', a: 'Hold the spacebar until it turns green, then release to start timing. Press any key to stop.' },
@@ -960,12 +960,12 @@ export default function TimerTerminal() {
                 { q: 'Can I export my solves?', a: 'Yes! Click the CSV button in the Timer view to download all solves for the current puzzle type.' },
                 { q: 'Is my data saved?', a: 'All solves are saved to your browser\'s localStorage. Clearing browser data will remove them. Cloud sync coming soon.' },
               ].map(({ q, a }) => (
-                <div key={q} className="bg-[#0d1117] border border-[#21262d] rounded-xl p-4">
+                <div key={q} className="bg-surface border border-line rounded-xl p-4">
                   <div className="flex items-start gap-2">
-                    <HelpCircle size={14} className="text-[#8b949e] mt-0.5 flex-shrink-0" />
+                    <HelpCircle size={14} className="text-muted mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-xs font-semibold text-white mb-1">{q}</p>
-                      <p className="text-xs text-[#8b949e] leading-relaxed">{a}</p>
+                      <p className="text-xs font-semibold text-fg mb-1">{q}</p>
+                      <p className="text-xs text-muted leading-relaxed">{a}</p>
                     </div>
                   </div>
                 </div>

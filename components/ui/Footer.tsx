@@ -10,15 +10,15 @@ const LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#21262d] bg-[#0d1117] mt-auto">
+    <footer className="border-t border-line bg-surface mt-auto">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-xs text-[#8b949e]">
+        <p className="text-xs text-muted">
           © {new Date().getFullYear()} Cubelelo Events. All rights reserved.
         </p>
         <nav className="flex flex-wrap items-center gap-4">
           {LINKS.map(({ href, label }) => (
             <Link key={href} href={href}
-              className="text-xs text-[#8b949e] hover:text-white transition-colors">
+              className="text-xs text-muted hover:text-fg transition-colors">
               {label}
             </Link>
           ))}

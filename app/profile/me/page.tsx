@@ -90,8 +90,8 @@ export default function MyProfilePage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#00dbe7] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -103,13 +103,13 @@ export default function MyProfilePage() {
   const initials = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
         {/* ── Profile Header ── */}
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl overflow-hidden mb-5">
+        <div className="bg-surface border border-line rounded-2xl overflow-hidden mb-5">
           {/* Cover */}
-          <div className="h-28 bg-gradient-to-r from-[#00dbe7]/20 via-[#a3fa00]/10 to-[#00dbe7]/5" />
+          <div className="h-28 bg-gradient-to-r from-accent/20 via-lime/10 to-accent/5" />
 
           <div className="px-6 pb-6">
             <div className="flex items-end justify-between -mt-10 mb-4 flex-wrap gap-3">
@@ -121,11 +121,11 @@ export default function MyProfilePage() {
                     alt={displayName}
                     width={80}
                     height={80}
-                    className="rounded-2xl border-4 border-[#0d1117] object-cover"
+                    className="rounded-2xl border-4 border-surface object-cover"
                     unoptimized
                   />
                 ) : (
-                  <div className="w-20 h-20 rounded-2xl border-4 border-[#0d1117] bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-2xl border-4 border-surface bg-gradient-to-br from-accent to-lime flex items-center justify-center">
                     <span className="text-black font-black text-2xl">{initials}</span>
                   </div>
                 )}
@@ -142,14 +142,14 @@ export default function MyProfilePage() {
                   <>
                     <button
                       onClick={() => { setEditing(false); setSaveError(''); }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#30363d] text-[#8b949e] hover:text-white text-xs transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line-strong text-muted hover:text-fg text-xs transition-colors"
                     >
                       <X size={13} /> Cancel
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00dbe7] hover:bg-[#00c4d0] text-black text-xs font-bold transition-all disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-black text-xs font-bold transition-all disabled:opacity-50"
                     >
                       {saving ? <span className="w-3 h-3 border border-black/30 border-t-black rounded-full animate-spin" /> : <Save size={13} />}
                       Save
@@ -158,7 +158,7 @@ export default function MyProfilePage() {
                 ) : (
                   <button
                     onClick={() => setEditing(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#30363d] hover:bg-[#21262d] text-[#8b949e] hover:text-white text-xs transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line-strong hover:bg-line text-muted hover:text-fg text-xs transition-all"
                   >
                     <Edit2 size={13} /> Edit Profile
                   </button>
@@ -174,13 +174,13 @@ export default function MyProfilePage() {
               </div>
             ) : (
               <div className="mb-1">
-                <h1 className="text-xl font-black text-white">{displayName}</h1>
+                <h1 className="text-xl font-black text-fg">{displayName}</h1>
               </div>
             )}
 
             <div className="flex items-center gap-3 flex-wrap">
               {profile?.userId && (
-                <span className="text-xs font-mono text-[#00dbe7] bg-[#00dbe7]/10 border border-[#00dbe7]/20 px-2.5 py-1 rounded-lg">
+                <span className="text-xs font-mono text-accent bg-accent/10 border border-accent/20 px-2.5 py-1 rounded-lg">
                   {profile.userId}
                 </span>
               )}
@@ -214,8 +214,8 @@ export default function MyProfilePage() {
           <div className="sm:col-span-2 space-y-5">
 
             {/* Info Card */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
-              <h2 className="text-xs font-mono uppercase tracking-widest text-[#8b949e] mb-4">Profile Details</h2>
+            <div className="bg-surface border border-line rounded-2xl p-5">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-muted mb-4">Profile Details</h2>
               {editing ? (
                 <div className="grid sm:grid-cols-2 gap-3">
                   <Input label="WCA ID" value={form.wcaId} onChange={v => setForm(f => ({ ...f, wcaId: v }))} placeholder="e.g. 2018AAAA01" />
@@ -224,11 +224,11 @@ export default function MyProfilePage() {
                   <Input label="Mobile" value={form.mobile} onChange={v => setForm(f => ({ ...f, mobile: v }))} />
                   <Input label="Date of Birth" value={form.dob} onChange={v => setForm(f => ({ ...f, dob: v }))} placeholder="YYYY-MM-DD" />
                   <div>
-                    <label className="text-[10px] font-mono text-[#8b949e] uppercase tracking-wider block mb-1">Gender</label>
+                    <label className="text-[10px] font-mono text-muted uppercase tracking-wider block mb-1">Gender</label>
                     <select
                       value={form.gender}
                       onChange={e => setForm(f => ({ ...f, gender: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-sm text-white focus:outline-none focus:border-[#00dbe7]"
+                      className="w-full px-3 py-2 rounded-lg bg-elevated border border-line-strong text-sm text-fg focus:outline-none focus:border-accent"
                     >
                       <option value="">Select…</option>
                       <option>Male</option>
@@ -252,29 +252,29 @@ export default function MyProfilePage() {
             </div>
 
             {/* Competition History */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+            <div className="bg-surface border border-line rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xs font-mono uppercase tracking-widest text-[#8b949e]">Competition History</h2>
-                <Link href="/compete" className="text-xs text-[#00dbe7] hover:underline">Browse →</Link>
+                <h2 className="text-xs font-mono uppercase tracking-widest text-muted">Competition History</h2>
+                <Link href="/compete" className="text-xs text-accent hover:underline">Browse →</Link>
               </div>
               {history.length === 0 ? (
-                <div className="text-center py-8 text-[#8b949e] text-sm">
+                <div className="text-center py-8 text-muted text-sm">
                   <Trophy size={28} className="mx-auto mb-2 opacity-30" />
                   No competition results yet.
                 </div>
               ) : (
                 <div className="space-y-2">
                   {history.map((h: any) => (
-                    <div key={h.competitionId} className="bg-[#0b0e11] rounded-xl px-4 py-3">
-                      <p className="text-xs font-semibold text-white truncate">{h.competitionName}</p>
+                    <div key={h.competitionId} className="bg-bg rounded-xl px-4 py-3">
+                      <p className="text-xs font-semibold text-fg truncate">{h.competitionName}</p>
                       <div className="flex gap-2 flex-wrap mt-1">
                         {(h.results ?? []).map((r: any) => (
-                          <span key={r.eventId} className="text-[10px] text-[#8b949e] font-mono">
+                          <span key={r.eventId} className="text-[10px] text-muted font-mono">
                             {r.eventId}: {r.averageTime >= 360000 ? 'DNF' : (r.averageTime / 1000).toFixed(2)}
                           </span>
                         ))}
                         {h.results?.length === 0 && (
-                          <span className="text-[10px] text-[#8b949e]">Registered — no result yet</span>
+                          <span className="text-[10px] text-muted">Registered — no result yet</span>
                         )}
                       </div>
                     </div>
@@ -287,23 +287,23 @@ export default function MyProfilePage() {
           {/* ── Right: Stats ── */}
           <div className="space-y-5">
             {/* PBs & Quick Stats */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
-              <h2 className="text-xs font-mono uppercase tracking-widest text-[#8b949e] mb-4">Personal Bests</h2>
+            <div className="bg-surface border border-line rounded-2xl p-5">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-muted mb-4">Personal Bests</h2>
               {pbs.length === 0 ? (
-                <p className="text-xs text-[#8b949e]">No PBs yet — start competing!</p>
+                <p className="text-xs text-muted">No PBs yet — start competing!</p>
               ) : (
                 <div className="space-y-2">
                   {pbs.map((pb: any) => (
                     <div key={pb.eventId} className="flex items-center justify-between">
-                      <span className="text-xs text-[#8b949e] font-mono">{pb.eventId}</span>
+                      <span className="text-xs text-muted font-mono">{pb.eventId}</span>
                       <div className="text-right">
-                        <span className="text-xs font-mono font-bold text-white">
+                        <span className="text-xs font-mono font-bold text-fg">
                           {pb.bestSingle && parseInt(pb.bestSingle) < 360000
                             ? (parseInt(pb.bestSingle) / 1000).toFixed(2)
                             : 'DNF'}
                         </span>
                         {pb.bestAverage && parseInt(pb.bestAverage) < 360000 && (
-                          <span className="ml-2 text-[10px] text-[#8b949e] font-mono">
+                          <span className="ml-2 text-[10px] text-muted font-mono">
                             ao5: {(parseInt(pb.bestAverage) / 1000).toFixed(2)}
                           </span>
                         )}
@@ -312,17 +312,17 @@ export default function MyProfilePage() {
                   ))}
                 </div>
               )}
-              <div className="mt-4 pt-4 border-t border-[#21262d] space-y-2">
+              <div className="mt-4 pt-4 border-t border-line space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#8b949e]">Competitions</span>
-                  <span className="text-xs font-mono font-bold text-white">{history.length}</span>
+                  <span className="text-xs text-muted">Competitions</span>
+                  <span className="text-xs font-mono font-bold text-fg">{history.length}</span>
                 </div>
               </div>
             </div>
 
             {/* Social / WCA links */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
-              <h2 className="text-xs font-mono uppercase tracking-widest text-[#8b949e] mb-4">Links</h2>
+            <div className="bg-surface border border-line rounded-2xl p-5">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-muted mb-4">Links</h2>
               <div className="space-y-2">
                 {profile?.wcaId ? (
                   <a href={`https://www.worldcubeassociation.org/persons/${profile.wcaId}`}
@@ -331,12 +331,12 @@ export default function MyProfilePage() {
                     <ExternalLink size={12} /> WCA Profile
                   </a>
                 ) : (
-                  <p className="text-xs text-[#8b949e]">No WCA ID linked yet.</p>
+                  <p className="text-xs text-muted">No WCA ID linked yet.</p>
                 )}
                 {profile?.socialMedia?.instagram && (
                   <a href={profile.socialMedia.instagram}
                     target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-xs text-[#8b949e] hover:text-white transition-colors">
+                    className="flex items-center gap-2 text-xs text-muted hover:text-fg transition-colors">
                     <ExternalLink size={12} /> Instagram
                   </a>
                 )}
@@ -346,7 +346,7 @@ export default function MyProfilePage() {
             {/* View public profile */}
             {profile?.userId && (
               <Link href={`/profile/${profile.userId}`}
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-[#30363d] text-xs text-[#8b949e] hover:text-white hover:bg-[#161b22] transition-all">
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-line-strong text-xs text-muted hover:text-fg hover:bg-elevated transition-all">
                 <User size={13} /> View Public Profile
               </Link>
             )}
@@ -363,11 +363,11 @@ function Input({ label, value, onChange, placeholder }: {
 }) {
   return (
     <div>
-      <label className="text-[10px] font-mono text-[#8b949e] uppercase tracking-wider block mb-1">{label}</label>
+      <label className="text-[10px] font-mono text-muted uppercase tracking-wider block mb-1">{label}</label>
       <input
         type="text" value={value} placeholder={placeholder}
         onChange={e => onChange(e.target.value)}
-        className="w-full px-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors"
+        className="w-full px-3 py-2 rounded-lg bg-elevated border border-line-strong text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors"
       />
     </div>
   );
@@ -376,11 +376,11 @@ function Input({ label, value, onChange, placeholder }: {
 function DetailRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2 text-[#8b949e]">
+      <div className="flex items-center gap-2 text-muted">
         {icon}
         <span className="text-xs">{label}</span>
       </div>
-      <span className="text-xs font-medium text-white text-right">{value}</span>
+      <span className="text-xs font-medium text-fg text-right">{value}</span>
     </div>
   );
 }

@@ -8,8 +8,8 @@ export const metadata: Metadata = { title: 'Contact Us — Cubelelo Events' };
 const CATEGORIES = [
   {
     icon: HelpCircle,
-    color: 'text-[#00dbe7]',
-    bg: 'bg-[#00dbe7]/10 border-[#00dbe7]/20',
+    color: 'text-accent',
+    bg: 'bg-accent/10 border-accent/20',
     title: 'General Questions',
     body: 'Check the FAQs first — most common questions are answered there.',
     action: { label: 'View FAQs', href: '/faqs' },
@@ -42,26 +42,26 @@ const CATEGORIES = [
 
 export default function ContactUs() {
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-3">
-            <Mail size={20} className="text-[#00dbe7]" />
-            <h1 className="text-3xl font-black text-white">Contact Us</h1>
+            <Mail size={20} className="text-accent" />
+            <h1 className="text-3xl font-black text-fg">Contact Us</h1>
           </div>
-          <p className="text-[#8b949e]">
+          <p className="text-muted">
             We typically respond within 24 hours on weekdays.
           </p>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4 mb-12">
           {CATEGORIES.map(({ icon: Icon, color, bg, title, body, action }) => (
-            <div key={title} className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+            <div key={title} className="bg-surface border border-line rounded-2xl p-5">
               <div className={`w-8 h-8 rounded-xl border ${bg} flex items-center justify-center mb-3`}>
                 <Icon size={15} className={color} />
               </div>
-              <h2 className="font-bold text-white text-sm mb-2">{title}</h2>
-              <p className="text-xs text-[#8b949e] leading-relaxed mb-4">{body}</p>
+              <h2 className="font-bold text-fg text-sm mb-2">{title}</h2>
+              <p className="text-xs text-muted leading-relaxed mb-4">{body}</p>
               {action.href.startsWith('/') ? (
                 <Link href={action.href}
                   className={`inline-flex items-center gap-1 text-xs ${color} hover:underline font-semibold`}>

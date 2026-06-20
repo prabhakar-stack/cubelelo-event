@@ -25,13 +25,13 @@ export default function TimerDisplay({ onSolveComplete, onStatusChange, inspecti
       if (inspDNF)    return 'text-red-500';
       if (inspPlus2)  return 'text-amber-400';
       if (inspWarning) return 'text-amber-300';
-      return 'text-[#a3fa00]';
+      return 'text-lime';
     }
     switch (status) {
       case 'holding': return 'text-red-500';
-      case 'ready':   return 'text-[#a3fa00]';
-      case 'running': return 'text-[#00dbe7] animate-pulse';
-      default:        return 'text-white';
+      case 'ready':   return 'text-lime';
+      case 'running': return 'text-accent animate-pulse';
+      default:        return 'text-fg';
     }
   };
 
@@ -69,16 +69,16 @@ export default function TimerDisplay({ onSolveComplete, onStatusChange, inspecti
       {/* Background glow */}
       <div className={`absolute -inset-10 rounded-full blur-3xl pointer-events-none transition-all duration-300 ${
         status === 'holding'    ? 'bg-red-500 opacity-10' :
-        status === 'ready'      ? 'bg-[#a3fa00] opacity-10' :
-        status === 'inspection' ? (inspPlus2 || inspDNF ? 'bg-amber-500 opacity-10' : 'bg-[#a3fa00] opacity-5') :
-        status === 'running'    ? 'bg-[#00dbe7] opacity-10' : 'bg-white/0'
+        status === 'ready'      ? 'bg-lime opacity-10' :
+        status === 'inspection' ? (inspPlus2 || inspDNF ? 'bg-amber-500 opacity-10' : 'bg-lime opacity-5') :
+        status === 'running'    ? 'bg-accent opacity-10' : 'bg-white/0'
       }`} />
 
       {/* Inspection progress bar */}
       {status === 'inspection' && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-[#21262d] rounded-t-2xl overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-line rounded-t-2xl overflow-hidden">
           <div
-            className={`h-full transition-all duration-100 ${inspPlus2 || inspDNF ? 'bg-amber-400' : 'bg-[#a3fa00]'}`}
+            className={`h-full transition-all duration-100 ${inspPlus2 || inspDNF ? 'bg-amber-400' : 'bg-lime'}`}
             style={{ width: `${Math.min(100, (inspectionTime / 17) * 100)}%` }}
           />
         </div>
@@ -103,8 +103,8 @@ export default function TimerDisplay({ onSolveComplete, onStatusChange, inspecti
         <div className="mt-4 flex items-center justify-center gap-2">
           {status === 'running' && (
             <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00dbe7] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00dbe7]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent" />
             </span>
           )}
           <p className={`text-[11px] font-mono uppercase tracking-widest font-semibold transition-colors ${

@@ -63,17 +63,17 @@ export default function Modal({
       {/* Panel */}
       <div
         ref={panelRef}
-        className={`relative w-full ${SIZE_CLASSES[size]} bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150`}
+        className={`relative w-full ${SIZE_CLASSES[size]} bg-surface border border-line-strong rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150`}
         style={{ animation: 'modalIn 0.15s ease-out forwards' }}
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-5 py-4 border-b border-[#21262d]">
-            <h2 className="font-semibold text-white">{title}</h2>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-line">
+            <h2 className="font-semibold text-fg">{title}</h2>
             {!lockClose && (
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+                className="p-1.5 rounded-lg hover:bg-line text-muted hover:text-fg transition-colors"
               >
                 <X size={15} />
               </button>

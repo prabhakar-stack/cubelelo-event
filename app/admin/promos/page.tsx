@@ -84,17 +84,17 @@ export default function AdminPromos() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-        <Link href="/admin" className="text-xs text-[#8b949e] hover:text-white mb-1 block">← Admin</Link>
+        <Link href="/admin" className="text-xs text-muted hover:text-fg mb-1 block">← Admin</Link>
         <div className="flex items-center gap-2 mb-6">
-          <Tag size={20} className="text-[#00dbe7]" />
+          <Tag size={20} className="text-accent" />
           <h1 className="text-2xl font-black">Promo Codes</h1>
         </div>
 
         {/* Create form */}
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 mb-8">
-          <h2 className="text-sm font-bold text-[#8b949e] uppercase tracking-wider mb-4">Create New Code</h2>
+        <div className="bg-surface border border-line rounded-2xl p-5 mb-8">
+          <h2 className="text-sm font-bold text-muted uppercase tracking-wider mb-4">Create New Code</h2>
           {error && <p className="text-xs text-red-400 mb-3">{error}</p>}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
@@ -106,22 +106,22 @@ export default function AdminPromos() {
               { key: 'expiresAt', label: 'Expiry Date (optional)', placeholder: '' },
             ].map(({ key, label, placeholder }) => (
               <div key={key}>
-                <label className="block text-[10px] text-[#8b949e] mb-1 uppercase tracking-wider">{label}</label>
+                <label className="block text-[10px] text-muted mb-1 uppercase tracking-wider">{label}</label>
                 <input
                   type={key === 'expiresAt' ? 'datetime-local' : 'text'}
                   value={(form as any)[key]}
                   onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
                   placeholder={placeholder}
-                  className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-lg text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors"
+                  className="w-full px-3 py-2 bg-elevated border border-line-strong rounded-lg text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
             ))}
             <div>
-              <label className="block text-[10px] text-[#8b949e] mb-1 uppercase tracking-wider">Type</label>
+              <label className="block text-[10px] text-muted mb-1 uppercase tracking-wider">Type</label>
               <select
                 value={form.type}
                 onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
-                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-lg text-sm text-white focus:outline-none focus:border-[#00dbe7]"
+                className="w-full px-3 py-2 bg-elevated border border-line-strong rounded-lg text-sm text-fg focus:outline-none focus:border-accent"
               >
                 <option value="percent">Percent (%)</option>
                 <option value="fixed">Fixed (₹)</option>
@@ -131,7 +131,7 @@ export default function AdminPromos() {
           <button
             onClick={create}
             disabled={saving}
-            className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-sm font-semibold hover:bg-[#00dbe7]/20 transition-all disabled:opacity-50"
+            className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/10 border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/20 transition-all disabled:opacity-50"
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
             Create Promo Code
@@ -140,37 +140,37 @@ export default function AdminPromos() {
 
         {/* Promo list */}
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-[#8b949e]">
+          <div className="flex items-center justify-center py-16 text-muted">
             <Loader2 size={24} className="animate-spin" />
           </div>
         ) : promos.length === 0 ? (
-          <div className="text-center py-12 text-[#8b949e]">
+          <div className="text-center py-12 text-muted">
             <Tag size={36} className="mx-auto mb-3 opacity-30" />
             <p className="text-sm">No promo codes yet</p>
           </div>
         ) : (
           <div className="space-y-2">
             {promos.map(p => (
-              <div key={p._id} className={`flex items-center gap-3 p-4 bg-[#0d1117] border rounded-xl transition-all ${p.active ? 'border-[#21262d]' : 'border-[#21262d] opacity-50'}`}>
+              <div key={p._id} className={`flex items-center gap-3 p-4 bg-surface border rounded-xl transition-all ${p.active ? 'border-line' : 'border-line opacity-50'}`}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono font-bold text-[#00dbe7]">{p.code}</span>
+                    <span className="font-mono font-bold text-accent">{p.code}</span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${p.type === 'percent' ? 'border-amber-500/30 text-amber-400 bg-amber-500/10' : 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'}`}>
                       {p.type === 'percent' ? `${p.value}%` : `₹${p.value}`} off
                     </span>
-                    {!p.active && <span className="text-[10px] text-[#8b949e] border border-[#30363d] px-2 py-0.5 rounded-full">Inactive</span>}
+                    {!p.active && <span className="text-[10px] text-muted border border-line-strong px-2 py-0.5 rounded-full">Inactive</span>}
                   </div>
-                  <div className="flex gap-3 mt-1 text-[11px] text-[#8b949e]">
+                  <div className="flex gap-3 mt-1 text-[11px] text-muted">
                     <span>Used: {p.usedCount}{p.maxUses > 0 ? `/${p.maxUses}` : ''}</span>
                     {p.minAmount > 0 && <span>Min ₹{p.minAmount}</span>}
                     {p.competitionId && <span>Comp: {p.competitionId}</span>}
                     {p.expiresAt && <span>Expires: {new Date(p.expiresAt).toLocaleDateString('en-IN')}</span>}
                   </div>
                 </div>
-                <button onClick={() => toggleActive(p.code, p.active)} className="text-[#8b949e] hover:text-white transition-colors" title={p.active ? 'Deactivate' : 'Activate'}>
-                  {p.active ? <ToggleRight size={20} className="text-[#00dbe7]" /> : <ToggleLeft size={20} />}
+                <button onClick={() => toggleActive(p.code, p.active)} className="text-muted hover:text-fg transition-colors" title={p.active ? 'Deactivate' : 'Activate'}>
+                  {p.active ? <ToggleRight size={20} className="text-accent" /> : <ToggleLeft size={20} />}
                 </button>
-                <button onClick={() => deletePromo(p.code)} className="text-[#8b949e] hover:text-red-400 transition-colors" title="Delete">
+                <button onClick={() => deletePromo(p.code)} className="text-muted hover:text-red-400 transition-colors" title="Delete">
                   <Trash2 size={16} />
                 </button>
               </div>

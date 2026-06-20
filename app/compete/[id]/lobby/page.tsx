@@ -61,17 +61,17 @@ export default function CompetitionLobby({ params }: PageParams) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center">
-        <Loader2 size={24} className="text-[#00dbe7] animate-spin" />
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <Loader2 size={24} className="text-accent animate-spin" />
       </div>
     );
   }
 
   if (!competition) {
     return (
-      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center text-[#8b949e]">
+      <div className="min-h-screen bg-bg flex items-center justify-center text-muted">
         Competition not found.{' '}
-        <Link href="/compete" className="text-[#00dbe7] underline ml-1">Back to lobby</Link>
+        <Link href="/compete" className="text-accent underline ml-1">Back to lobby</Link>
       </div>
     );
   }
@@ -90,14 +90,14 @@ export default function CompetitionLobby({ params }: PageParams) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
-        <Link href="/compete" className="inline-flex items-center gap-1 text-[#8b949e] hover:text-white text-xs mb-8 transition-colors">
+        <Link href="/compete" className="inline-flex items-center gap-1 text-muted hover:text-fg text-xs mb-8 transition-colors">
           <ChevronLeft size={14} /> Back to competitions
         </Link>
 
         {/* Header */}
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-6 mb-6">
+        <div className="bg-surface border border-line rounded-2xl p-6 mb-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -106,14 +106,14 @@ export default function CompetitionLobby({ params }: PageParams) {
                     ? 'bg-red-500/10 border border-red-500/30 text-red-400'
                     : isOpen
                     ? 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
-                    : 'bg-[#161b22] border border-[#30363d] text-[#8b949e]'
+                    : 'bg-elevated border border-line-strong text-muted'
                 }`}>
                   {isLive ? '🔴 LIVE' : isOpen ? 'REGISTRATION OPEN' : competition.status}
                 </span>
               </div>
-              <h1 className="text-2xl font-black text-white mb-2">{compName}</h1>
+              <h1 className="text-2xl font-black text-fg mb-2">{compName}</h1>
               {competition.description && (
-                <p className="text-sm text-[#8b949e] leading-relaxed">{competition.description}</p>
+                <p className="text-sm text-muted leading-relaxed">{competition.description}</p>
               )}
             </div>
             {registered && (
@@ -127,10 +127,10 @@ export default function CompetitionLobby({ params }: PageParams) {
 
         <div className="grid sm:grid-cols-2 gap-4 mb-6">
           {/* Countdown */}
-          <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+          <div className="bg-surface border border-line rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
-              <Clock size={15} className="text-[#00dbe7]" />
-              <h2 className="font-semibold text-sm text-white">
+              <Clock size={15} className="text-accent" />
+              <h2 className="font-semibold text-sm text-fg">
                 {isLive ? 'Round Status' : 'Countdown to Open'}
               </h2>
             </div>
@@ -140,30 +140,30 @@ export default function CompetitionLobby({ params }: PageParams) {
                   <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                   LIVE NOW
                 </div>
-                <p className="text-xs text-[#8b949e]">Scramble is revealed — timer is armed</p>
+                <p className="text-xs text-muted">Scramble is revealed — timer is armed</p>
               </div>
             ) : timeToOpen !== null ? (
               <div className="text-center py-4">
-                <div className="text-3xl font-black text-white font-mono mb-1">
+                <div className="text-3xl font-black text-fg font-mono mb-1">
                   {formatCountdown(timeToOpen)}
                 </div>
-                <p className="text-xs text-[#8b949e]">until round opens</p>
+                <p className="text-xs text-muted">until round opens</p>
               </div>
             ) : (
-              <p className="text-sm text-[#8b949e]">Check back soon</p>
+              <p className="text-sm text-muted">Check back soon</p>
             )}
           </div>
 
           {/* Events */}
-          <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+          <div className="bg-surface border border-line rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-3">
               <Trophy size={15} className="text-amber-400" />
-              <h2 className="font-semibold text-sm text-white">Events</h2>
+              <h2 className="font-semibold text-sm text-fg">Events</h2>
             </div>
             <div className="flex flex-wrap gap-2">
               {(competition.events ?? []).map((e: any, i: number) => (
                 <span key={i}
-                  className="px-3 py-1 rounded-lg bg-[#161b22] border border-[#30363d] text-xs font-mono text-[#8b949e]">
+                  className="px-3 py-1 rounded-lg bg-elevated border border-line-strong text-xs font-mono text-muted">
                   {e.eventId ?? e}
                 </span>
               ))}
@@ -172,12 +172,12 @@ export default function CompetitionLobby({ params }: PageParams) {
         </div>
 
         {/* Round Rules */}
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 mb-6">
+        <div className="bg-surface border border-line rounded-2xl p-5 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <Zap size={15} className="text-[#a3fa00]" />
-            <h2 className="font-semibold text-sm text-white">Round Rules</h2>
+            <Zap size={15} className="text-lime" />
+            <h2 className="font-semibold text-sm text-fg">Round Rules</h2>
           </div>
-          <div className="grid sm:grid-cols-2 gap-3 text-xs text-[#8b949e]">
+          <div className="grid sm:grid-cols-2 gap-3 text-xs text-muted">
             {[
               ['Format', 'Average of 5 (ao5)'],
               ['Inspection', '15 seconds (WCA rules)'],
@@ -186,9 +186,9 @@ export default function CompetitionLobby({ params }: PageParams) {
               ['Video Proof', 'Required for top 3'],
               ['Anti-Cheat', 'Statistical outlier detection'],
             ].map(([k, v]) => (
-              <div key={k} className="flex justify-between bg-[#0b0e11] rounded-lg px-3 py-2">
-                <span className="text-[#8b949e]">{k}</span>
-                <span className="text-white font-medium">{v}</span>
+              <div key={k} className="flex justify-between bg-bg rounded-lg px-3 py-2">
+                <span className="text-muted">{k}</span>
+                <span className="text-fg font-medium">{v}</span>
               </div>
             ))}
           </div>
@@ -202,20 +202,20 @@ export default function CompetitionLobby({ params }: PageParams) {
               <Zap size={18} /> Enter Live Round
             </Link>
           ) : (
-            <div className="w-full flex items-center justify-center gap-2 py-4 bg-[#161b22] border border-[#30363d] text-[#8b949e] rounded-2xl text-sm">
+            <div className="w-full flex items-center justify-center gap-2 py-4 bg-elevated border border-line-strong text-muted rounded-2xl text-sm">
               <Clock size={16} /> Waiting for round to open…
             </div>
           )
         ) : (
           <Link href={`/compete/${id}`}
-            className="w-full flex items-center justify-center gap-2 py-4 bg-[#00dbe7] hover:bg-[#00c4d0] text-black font-bold rounded-2xl text-sm transition-all shadow-lg shadow-[#00dbe7]/20">
+            className="w-full flex items-center justify-center gap-2 py-4 bg-accent hover:bg-accent-hover text-black font-bold rounded-2xl text-sm transition-all shadow-lg shadow-accent/20">
             Register to Compete
           </Link>
         )}
 
         {/* Competitor count */}
         {competition.registrationCount > 0 && (
-          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#8b949e]">
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted">
             <Users size={13} />
             {competition.registrationCount} competitor{competition.registrationCount !== 1 ? 's' : ''} registered
           </div>

@@ -51,30 +51,30 @@ export default function NavBar() {
   if (pathname === '/login' || pathname === '/signup') return null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0d1117]/80 backdrop-blur-xl border-b border-[#21262d]">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-line">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center shadow-lg shadow-[#00dbe7]/20 group-hover:shadow-[#00dbe7]/40 transition-shadow">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-lime flex items-center justify-center shadow-lg shadow-accent/20 group-hover:shadow-accent/40 transition-shadow">
             <span className="text-black font-black text-xs">CB</span>
           </div>
-          <span className="font-bold text-sm text-white hidden sm:block">
-            Cube<span className="text-[#00dbe7]">lelo</span>
+          <span className="font-bold text-sm text-fg hidden sm:block">
+            Cube<span className="text-accent">lelo</span>
           </span>
         </Link>
 
         {/* Search bar */}
         <form onSubmit={handleSearch} className="hidden sm:flex items-center mx-4">
           <div className="relative">
-            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8b949e]" />
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
             <input
               ref={searchRef}
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search CL ID or name…"
-              className="w-44 lg:w-56 pl-7 pr-3 py-1.5 bg-[#161b22] border border-[#30363d] rounded-lg text-xs text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] focus:w-64 transition-all"
+              className="w-44 lg:w-56 pl-7 pr-3 py-1.5 bg-elevated border border-line-strong rounded-lg text-xs text-fg placeholder-muted focus:outline-none focus:border-accent focus:w-64 transition-all"
             />
           </div>
         </form>
@@ -87,8 +87,8 @@ export default function NavBar() {
               href={href}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 isActive(href)
-                  ? 'bg-[#21262d] text-[#00dbe7]'
-                  : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]/60'
+                  ? 'bg-line text-accent'
+                  : 'text-muted hover:text-fg hover:bg-line/60'
               }`}
             >
               <Icon size={15} />
@@ -100,12 +100,12 @@ export default function NavBar() {
         {/* Right: Auth */}
         <div className="flex items-center gap-2">
           {status === 'loading' ? (
-            <div className="w-8 h-8 rounded-full bg-[#21262d] animate-pulse" />
+            <div className="w-8 h-8 rounded-full bg-line animate-pulse" />
           ) : session ? (
             <div className="relative">
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#21262d] transition-all"
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-line transition-all"
               >
                 {session.user?.image ? (
                   <Image
@@ -113,27 +113,27 @@ export default function NavBar() {
                     alt={session.user.name ?? 'User'}
                     width={28}
                     height={28}
-                    className="rounded-full border border-[#30363d]"
+                    className="rounded-full border border-line-strong"
                     unoptimized
                   />
                 ) : (
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center text-black font-bold text-xs">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-lime flex items-center justify-center text-black font-bold text-xs">
                     {session.user?.name?.[0] ?? '?'}
                   </div>
                 )}
-                <span className="text-sm text-white hidden sm:block max-w-[100px] truncate">
+                <span className="text-sm text-fg hidden sm:block max-w-[100px] truncate">
                   {session.user?.name}
                 </span>
-                <ChevronDown size={13} className="text-[#8b949e]" />
+                <ChevronDown size={13} className="text-muted" />
               </button>
 
               {profileOpen && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)} />
-                  <div className="absolute right-0 top-full mt-1 w-56 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl z-20 overflow-hidden">
-                    <div className="px-3 py-2.5 border-b border-[#21262d]">
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-elevated border border-line-strong rounded-xl shadow-2xl z-20 overflow-hidden">
+                    <div className="px-3 py-2.5 border-b border-line">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <p className="text-sm font-semibold text-white truncate">
+                        <p className="text-sm font-semibold text-fg truncate">
                           {session.user?.name}
                         </p>
                         {session.user?.role === 'admin' && (
@@ -142,9 +142,9 @@ export default function NavBar() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#8b949e] truncate">{session.user?.email}</p>
+                      <p className="text-xs text-muted truncate">{session.user?.email}</p>
                       {(session.user as any)?.clId && (
-                        <p className="text-[10px] font-mono text-[#8b949e] mt-0.5">
+                        <p className="text-[10px] font-mono text-muted mt-0.5">
                           {(session.user as any).clId}
                         </p>
                       )}
@@ -163,7 +163,7 @@ export default function NavBar() {
                       <Link
                         href="/profile/me"
                         onClick={() => setProfileOpen(false)}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[#8b949e] hover:text-white hover:bg-[#21262d] rounded-lg transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted hover:text-fg hover:bg-line rounded-lg transition-colors"
                       >
                         Profile & Settings
                       </Link>
@@ -183,14 +183,14 @@ export default function NavBar() {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[#8b949e] hover:text-white hover:bg-[#21262d] border border-transparent hover:border-[#30363d] transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-muted hover:text-fg hover:bg-line border border-transparent hover:border-line-strong transition-all"
               >
                 <LogIn size={14} />
                 <span className="hidden sm:block">Sign in</span>
               </Link>
               <Link
                 href="/signup"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00dbe7] hover:bg-[#00c4d0] text-black text-sm font-bold transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-black text-sm font-bold transition-all"
               >
                 <UserPlus size={14} />
                 <span className="hidden sm:block">Sign up</span>
@@ -201,7 +201,7 @@ export default function NavBar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-1.5 rounded-lg hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+            className="md:hidden p-1.5 rounded-lg hover:bg-line text-muted hover:text-fg transition-colors"
           >
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -210,7 +210,7 @@ export default function NavBar() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-[#0d1117] border-t border-[#21262d] px-4 py-3 space-y-1">
+        <div className="md:hidden bg-surface border-t border-line px-4 py-3 space-y-1">
           {NAV_LINKS.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
@@ -218,8 +218,8 @@ export default function NavBar() {
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive(href)
-                  ? 'bg-[#21262d] text-[#00dbe7]'
-                  : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]/60'
+                  ? 'bg-line text-accent'
+                  : 'text-muted hover:text-fg hover:bg-line/60'
               }`}
             >
               <Icon size={16} />
@@ -227,13 +227,13 @@ export default function NavBar() {
             </Link>
           ))}
           {!session && (
-            <div className="pt-2 border-t border-[#21262d] space-y-1 mt-1">
+            <div className="pt-2 border-t border-line space-y-1 mt-1">
               <Link href="/login" onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all">
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-line transition-all">
                 <LogIn size={16} /> Sign in
               </Link>
               <Link href="/signup" onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm bg-[#00dbe7]/10 text-[#00dbe7] hover:bg-[#00dbe7]/20 transition-all">
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm bg-accent/10 text-accent hover:bg-accent/20 transition-all">
                 <UserPlus size={16} /> Sign up
               </Link>
             </div>

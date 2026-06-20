@@ -22,6 +22,7 @@ export interface IUser extends Document {
   wcaVerified?: boolean;
   notifEmail?: boolean;
   notifPush?: boolean;
+  theme?: 'dark' | 'light';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,6 +53,7 @@ const UserSchema = new Schema<IUser>(
     wcaVerified: { type: Boolean, default: false },
     notifEmail: { type: Boolean, default: true },
     notifPush: { type: Boolean, default: true },
+    theme: { type: String, enum: ['dark', 'light'], default: 'dark' },
   },
   {
     timestamps: true,

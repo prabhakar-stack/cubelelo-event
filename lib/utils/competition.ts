@@ -158,9 +158,9 @@ export function getStatusColor(status: string): string {
     LIVE: 'text-red-400 bg-red-500/10 border-red-500/30',
     REGISTRATION_OPEN: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
     REGISTRATION_CLOSED: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-    COMPLETED: 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/30',
-    DRAFT: 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/30',
+    COMPLETED: 'text-muted bg-muted/10 border-muted/30',
+    DRAFT: 'text-muted bg-muted/10 border-muted/30',
     CANCELLED: 'text-red-300 bg-red-900/10 border-red-900/30',
   };
-  return map[status] ?? 'text-white';
+  return map[status] ?? 'text-fg';
 }

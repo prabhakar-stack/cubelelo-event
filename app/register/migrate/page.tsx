@@ -61,9 +61,9 @@ export default function MigratePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-bg flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <Link href="/login" className="inline-flex items-center gap-1 text-[#8b949e] hover:text-white text-xs mb-8 transition-colors">
+        <Link href="/login" className="inline-flex items-center gap-1 text-muted hover:text-fg text-xs mb-8 transition-colors">
           <ChevronLeft size={14} /> Back to login
         </Link>
 
@@ -72,8 +72,8 @@ export default function MigratePage() {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-xs font-mono mb-4">
             <User size={12} /> Existing Member
           </div>
-          <h1 className="text-2xl font-black text-white mb-1">Claim your account</h1>
-          <p className="text-sm text-[#8b949e]">
+          <h1 className="text-2xl font-black text-fg mb-1">Claim your account</h1>
+          <p className="text-sm text-muted">
             Already competed on Cubelelo? Activate your account to keep your full history.
           </p>
         </div>
@@ -81,24 +81,24 @@ export default function MigratePage() {
         {/* Step 1: Lookup */}
         {step === 'lookup' && (
           <form onSubmit={handleLookup} className="space-y-4">
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 mb-6 text-sm text-[#8b949e] space-y-2">
-              <p className="font-medium text-white text-xs">How this works:</p>
+            <div className="bg-surface border border-line rounded-2xl p-5 mb-6 text-sm text-muted space-y-2">
+              <p className="font-medium text-fg text-xs">How this works:</p>
               <p>1. Enter your CL ID (e.g. 22CLNAG001) or old email address</p>
               <p>2. We'll send a 6-digit OTP to your registered email</p>
               <p>3. Verify and set a new password — your history is restored</p>
             </div>
             <div>
-              <label className="block text-xs text-[#8b949e] mb-1.5">CL ID or Email address</label>
+              <label className="block text-xs text-muted mb-1.5">CL ID or Email address</label>
               <div className="relative">
-                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]" />
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
                 <input type="text" value={identifier} onChange={e => setIdentifier(e.target.value)}
                   placeholder="22CLNAG001 or your@email.com" required
-                  className="w-full pl-9 pr-4 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                  className="w-full pl-9 pr-4 py-2.5 bg-surface border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
               </div>
             </div>
             {error && <div className="flex items-center gap-2 text-xs text-red-400"><AlertCircle size={13} />{error}</div>}
             <button type="submit" disabled={loading}
-              className="w-full py-3 rounded-xl bg-[#00dbe7] hover:bg-[#00c4d0] disabled:opacity-50 text-black font-bold text-sm transition-all flex items-center justify-center gap-2">
+              className="w-full py-3 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-50 text-black font-bold text-sm transition-all flex items-center justify-center gap-2">
               {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
               Find My Account
             </button>
@@ -108,33 +108,33 @@ export default function MigratePage() {
         {/* Step 2: OTP + password */}
         {step === 'verify' && (
           <form onSubmit={handleActivate} className="space-y-4">
-            <div className="bg-[#0d1117] border border-amber-400/20 rounded-2xl p-4 mb-2">
-              <p className="text-xs text-[#8b949e]">OTP sent to <span className="text-white font-mono">{maskedEmail}</span></p>
-              {userId && <p className="text-[10px] text-[#8b949e] mt-1">CL ID: <span className="text-amber-400 font-mono">{userId}</span></p>}
+            <div className="bg-surface border border-amber-400/20 rounded-2xl p-4 mb-2">
+              <p className="text-xs text-muted">OTP sent to <span className="text-fg font-mono">{maskedEmail}</span></p>
+              {userId && <p className="text-[10px] text-muted mt-1">CL ID: <span className="text-amber-400 font-mono">{userId}</span></p>}
             </div>
             <div>
-              <label className="block text-xs text-[#8b949e] mb-1.5">6-digit OTP</label>
+              <label className="block text-xs text-muted mb-1.5">6-digit OTP</label>
               <input type="text" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 placeholder="123456" required maxLength={6} pattern="[0-9]{6}"
-                className="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors font-mono tracking-widest text-center text-lg" />
+                className="w-full px-3 py-2.5 bg-surface border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors font-mono tracking-widest text-center text-lg" />
             </div>
             {['New password', 'Confirm password'].map((label, i) => (
               <div key={label}>
-                <label className="block text-xs text-[#8b949e] mb-1.5">{label}</label>
+                <label className="block text-xs text-muted mb-1.5">{label}</label>
                 <input type="password" required minLength={6} placeholder="••••••••"
                   value={i === 0 ? password : confirm}
                   onChange={e => i === 0 ? setPassword(e.target.value) : setConfirm(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                  className="w-full px-3 py-2.5 bg-surface border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
               </div>
             ))}
             {error && <div className="flex items-center gap-2 text-xs text-red-400"><AlertCircle size={13} />{error}</div>}
             <button type="submit" disabled={loading}
-              className="w-full py-3 rounded-xl bg-[#00dbe7] hover:bg-[#00c4d0] disabled:opacity-50 text-black font-bold text-sm transition-all flex items-center justify-center gap-2">
+              className="w-full py-3 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-50 text-black font-bold text-sm transition-all flex items-center justify-center gap-2">
               {loading ? <Loader2 size={16} className="animate-spin" /> : <Key size={16} />}
               Activate Account
             </button>
             <button type="button" onClick={() => { setStep('lookup'); setError(''); }}
-              className="w-full py-2 text-xs text-[#8b949e] hover:text-white transition-colors">
+              className="w-full py-2 text-xs text-muted hover:text-fg transition-colors">
               ← Try a different ID
             </button>
           </form>
@@ -144,15 +144,15 @@ export default function MigratePage() {
         {step === 'done' && (
           <div className="text-center">
             <CheckCircle size={52} className="text-emerald-400 mx-auto mb-4" />
-            <h2 className="text-xl font-black text-white mb-2">Account activated!</h2>
-            <p className="text-sm text-[#8b949e] mb-2">Your full competition history is restored.</p>
-            <p className="text-xs text-[#8b949e]">Redirecting to your profile…</p>
+            <h2 className="text-xl font-black text-fg mb-2">Account activated!</h2>
+            <p className="text-sm text-muted mb-2">Your full competition history is restored.</p>
+            <p className="text-xs text-muted">Redirecting to your profile…</p>
           </div>
         )}
 
-        <p className="mt-8 text-center text-xs text-[#8b949e]">
+        <p className="mt-8 text-center text-xs text-muted">
           New to Cubelelo?{' '}
-          <Link href="/signup" className="text-[#00dbe7] hover:underline">Create an account</Link>
+          <Link href="/signup" className="text-accent hover:underline">Create an account</Link>
         </p>
       </div>
     </div>

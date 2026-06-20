@@ -1,1 +1,38 @@
 @import "tailwindcss";
+
+/*
+ * Design tokens. Tailwind v4 emits these as `var(--color-*)` references, so the
+ * `html.light` overrides below re-theme the whole app at runtime (opacity
+ * modifiers like `bg-accent/10` keep working via color-mix).
+ *
+ * Default (no class / `html.dark`) = dark theme.
+ */
+@theme {
+  --color-bg:           #0b0e11;
+  --color-surface:      #0d1117;
+  --color-elevated:     #161b22;
+  --color-line:         #21262d;
+  --color-line-strong:  #30363d;
+  --color-muted:        #8b949e;
+  --color-fg:           #e6edf3;
+  --color-accent:       #00dbe7;
+  --color-accent-hover: #00c4d0;
+  --color-lime:         #a3fa00;
+}
+
+/* Light theme — override the same custom properties. */
+html.light {
+  --color-bg:           #f6f8fa;
+  --color-surface:      #ffffff;
+  --color-elevated:     #eef1f4;
+  --color-line:         #d8dee4;
+  --color-line-strong:  #c2cad2;
+  --color-muted:        #5b6570;
+  --color-fg:           #1c2128;
+  --color-accent:       #00b3c4;
+  --color-accent-hover: #0098a8;
+  --color-lime:         #5fb800;
+}
+
+html { color-scheme: dark; }
+html.light { color-scheme: light; }

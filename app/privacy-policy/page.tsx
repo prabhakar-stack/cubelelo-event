@@ -53,32 +53,32 @@ Despite these measures, no system is completely secure. If you believe your acco
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-3">
-            <Lock size={20} className="text-[#00dbe7]" />
-            <h1 className="text-3xl font-black text-white">Privacy Policy</h1>
+            <Lock size={20} className="text-accent" />
+            <h1 className="text-3xl font-black text-fg">Privacy Policy</h1>
           </div>
-          <p className="text-[#8b949e] text-sm">
+          <p className="text-muted text-sm">
             Cubelelo Events Platform · Operated by Cubelelo (India)
           </p>
-          <p className="text-xs text-[#8b949e] font-mono mt-1">Effective: June 2026</p>
+          <p className="text-xs text-muted font-mono mt-1">Effective: June 2026</p>
         </div>
 
         <div className="space-y-6">
           {SECTIONS.map(({ title, body }) => (
-            <div key={title} className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-6">
-              <h2 className="font-bold text-white text-sm mb-3">{title}</h2>
-              <div className="text-sm text-[#8b949e] leading-relaxed whitespace-pre-line">{body}</div>
+            <div key={title} className="bg-surface border border-line rounded-2xl p-6">
+              <h2 className="font-bold text-fg text-sm mb-3">{title}</h2>
+              <div className="text-sm text-muted leading-relaxed whitespace-pre-line">{body}</div>
             </div>
           ))}
         </div>
 
-        <div className="mt-8 p-5 bg-[#0d1117] border border-[#00dbe7]/20 rounded-2xl">
-          <p className="text-xs text-[#8b949e]">
+        <div className="mt-8 p-5 bg-surface border border-accent/20 rounded-2xl">
+          <p className="text-xs text-muted">
             Questions or requests regarding this policy:{' '}
-            <a href="mailto:support@cubelelo.com" className="text-[#00dbe7] hover:underline">
+            <a href="mailto:support@cubelelo.com" className="text-accent hover:underline">
               support@cubelelo.com
             </a>
           </p>

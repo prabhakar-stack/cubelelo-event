@@ -5,14 +5,15 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Lock, Bell, Eye, Moon, Sun, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { applyTheme, getStoredTheme, type Theme } from '@/lib/theme';
 
 type Status = { type: 'success' | 'error'; msg: string } | null;
 
 function Section({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
-    <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5 space-y-4">
-      <h2 className="flex items-center gap-2 text-sm font-bold text-white">
-        <Icon size={15} className="text-[#8b949e]" />
+    <div className="bg-surface border border-line rounded-2xl p-5 space-y-4">
+      <h2 className="flex items-center gap-2 text-sm font-bold text-fg">
+        <Icon size={15} className="text-muted" />
         {title}
       </h2>
       {children}
@@ -24,13 +25,13 @@ function Toggle({ label, sub, checked, onChange }: { label: string; sub?: string
   return (
     <label className="flex items-center justify-between cursor-pointer group">
       <div>
-        <p className="text-sm text-white group-hover:text-[#00dbe7] transition-colors">{label}</p>
-        {sub && <p className="text-xs text-[#8b949e] mt-0.5">{sub}</p>}
+        <p className="text-sm text-fg group-hover:text-accent transition-colors">{label}</p>
+        {sub && <p className="text-xs text-muted mt-0.5">{sub}</p>}
       </div>
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-5 rounded-full transition-all duration-200 flex-shrink-0 ${checked ? 'bg-[#00dbe7]' : 'bg-[#30363d]'}`}
+        className={`relative w-10 h-5 rounded-full transition-all duration-200 flex-shrink-0 ${checked ? 'bg-accent' : 'bg-line-strong'}`}
       >
         <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${checked ? 'left-5' : 'left-0.5'}`} />
       </button>
@@ -72,21 +73,26 @@ export default function SettingsPage() {
             notifPush: d.user.notifPush ?? true,
             privacyPublic: d.user.privacyPublic ?? true,
           });
+          // Account theme is the source of truth across devices; fall back to local.
+          const t: Theme = d.user.theme === 'light' || d.user.theme === 'dark'
+            ? d.user.theme : getStoredTheme();
+          setTheme(t);
+          applyTheme(t);
         }
       })
       .catch(() => {});
-    const stored = localStorage.getItem('cl_theme');
-    if (stored === 'light' || stored === 'dark') setTheme(stored);
+    setTheme(getStoredTheme());
   }, [session]);
 
-  const applyTheme = (t: 'dark' | 'light') => {
+  const selectTheme = (t: Theme) => {
     setTheme(t);
-    localStorage.setItem('cl_theme', t);
-    if (t === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    applyTheme(t);
+    // Persist to the account so the preference follows the user across devices.
+    fetch('/api/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme: t }),
+    }).catch(() => {});
   };
 
   const savePrefs = async () => {
@@ -138,18 +144,18 @@ export default function SettingsPage() {
   };
 
   if (status === 'loading') {
-    return <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center"><div className="w-6 h-6 border-2 border-[#00dbe7]/30 border-t-[#00dbe7] rounded-full animate-spin" /></div>;
+    return <div className="min-h-screen bg-bg flex items-center justify-center"><div className="w-6 h-6 border-2 border-accent/30 border-t-accent rounded-full animate-spin" /></div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
 
         <div className="flex items-center gap-3">
-          <Link href="/profile/me" className="p-2 rounded-lg text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all">
+          <Link href="/profile/me" className="p-2 rounded-lg text-muted hover:text-fg hover:bg-line transition-all">
             <ChevronLeft size={18} />
           </Link>
-          <h1 className="text-xl font-bold text-white">Account Settings</h1>
+          <h1 className="text-xl font-bold text-fg">Account Settings</h1>
         </div>
 
         {/* Password */}
@@ -161,12 +167,12 @@ export default function SettingsPage() {
               { label: 'Confirm new password', value: confirmPw, setter: setConfirmPw },
             ].map(({ label, value, setter }) => (
               <div key={label}>
-                <label className="block text-xs text-[#8b949e] mb-1">{label}</label>
+                <label className="block text-xs text-muted mb-1">{label}</label>
                 <input
                   type="password"
                   value={value}
                   onChange={e => setter(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors"
+                  className="w-full px-3 py-2 rounded-xl bg-elevated border border-line-strong text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
             ))}
@@ -177,12 +183,12 @@ export default function SettingsPage() {
               </div>
             )}
             <button type="submit" disabled={savingPw}
-              className="w-full py-2 rounded-xl text-sm font-bold bg-[#21262d] text-white hover:bg-[#30363d] disabled:opacity-50 transition-all">
+              className="w-full py-2 rounded-xl text-sm font-bold bg-line text-fg hover:bg-line-strong disabled:opacity-50 transition-all">
               {savingPw ? 'Saving...' : 'Update Password'}
             </button>
           </form>
-          <p className="text-xs text-[#8b949e]">
-            Signed in with Google? <Link href="/forgot-password" className="text-[#00dbe7] hover:underline">Set a password via email reset.</Link>
+          <p className="text-xs text-muted">
+            Signed in with Google? <Link href="/forgot-password" className="text-accent hover:underline">Set a password via email reset.</Link>
           </p>
         </Section>
 
@@ -190,15 +196,15 @@ export default function SettingsPage() {
         <Section title="Appearance" icon={theme === 'dark' ? Moon : Sun}>
           <div className="flex gap-3">
             {(['dark', 'light'] as const).map(t => (
-              <button key={t} onClick={() => applyTheme(t)}
+              <button key={t} onClick={() => selectTheme(t)}
                 className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition-all ${
-                  theme === t ? 'bg-[#00dbe7]/10 border-[#00dbe7]/40 text-[#00dbe7]' : 'bg-[#161b22] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#8b949e]'
+                  theme === t ? 'bg-accent/10 border-accent/40 text-accent' : 'bg-elevated border-line-strong text-muted hover:text-fg hover:border-muted'
                 }`}>
                 {t === 'dark' ? '🌙 Dark' : '☀️ Light'}
               </button>
             ))}
           </div>
-          <p className="text-xs text-[#8b949e]">Dark mode is default. Your preference is saved locally.</p>
+          <p className="text-xs text-muted">Applies instantly and saves to your account, syncing across devices.</p>
         </Section>
 
         {/* Notifications */}
@@ -237,7 +243,7 @@ export default function SettingsPage() {
           </div>
         )}
         <button onClick={savePrefs} disabled={savingPrefs}
-          className="w-full py-2.5 rounded-xl text-sm font-bold bg-[#00dbe7] text-black hover:bg-[#00dbe7]/80 disabled:opacity-50 transition-all">
+          className="w-full py-2.5 rounded-xl text-sm font-bold bg-accent text-black hover:bg-accent/80 disabled:opacity-50 transition-all">
           {savingPrefs ? 'Saving...' : 'Save Preferences'}
         </button>
 

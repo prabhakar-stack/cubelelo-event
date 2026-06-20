@@ -71,17 +71,17 @@ export default function CompetitionResults({ params }: PageParams) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center">
-        <Loader2 size={24} className="text-[#00dbe7] animate-spin" />
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <Loader2 size={24} className="text-accent animate-spin" />
       </div>
     );
   }
 
   if (!competition) {
     return (
-      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center text-[#8b949e]">
+      <div className="min-h-screen bg-bg flex items-center justify-center text-muted">
         Competition not found.{' '}
-        <Link href="/compete" className="text-[#00dbe7] underline ml-1">Back</Link>
+        <Link href="/compete" className="text-accent underline ml-1">Back</Link>
       </div>
     );
   }
@@ -114,11 +114,11 @@ export default function CompetitionResults({ params }: PageParams) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
 
         <Link href={`/compete/${id}`}
-          className="inline-flex items-center gap-1 text-[#8b949e] hover:text-white text-xs mb-8 transition-colors">
+          className="inline-flex items-center gap-1 text-muted hover:text-fg text-xs mb-8 transition-colors">
           <ChevronLeft size={14} /> Back to competition
         </Link>
 
@@ -126,14 +126,14 @@ export default function CompetitionResults({ params }: PageParams) {
         <div className="flex items-start gap-4 mb-8">
           <div className="text-4xl">{getPuzzleEmoji(puzzleType)}</div>
           <div className="flex-1">
-            <h1 className="text-2xl font-black text-white mb-1">{compName}</h1>
-            <p className="text-sm text-[#8b949e]">Official Results</p>
+            <h1 className="text-2xl font-black text-fg mb-1">{compName}</h1>
+            <p className="text-sm text-muted">Official Results</p>
           </div>
           {session && (
             <button
               onClick={downloadCertificate}
               disabled={certLoading}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-sm font-semibold hover:bg-[#00dbe7]/20 transition-all disabled:opacity-50 flex-shrink-0"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/10 border border-accent/30 text-accent text-sm font-semibold hover:bg-accent/20 transition-all disabled:opacity-50 flex-shrink-0"
             >
               {certLoading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               My Certificate
@@ -154,8 +154,8 @@ export default function CompetitionResults({ params }: PageParams) {
                 <div key={entry.userId}
                   className={`bg-gradient-to-b ${colors[pos]} border rounded-2xl p-4 text-center flex flex-col items-center justify-end ${heights[pos]}`}>
                   <div className="text-2xl mb-1">{medals[pos]}</div>
-                  <p className="text-xs font-bold text-white truncate w-full">{entry.name}</p>
-                  <p className="text-sm font-black font-mono text-white mt-0.5">{entry.average}</p>
+                  <p className="text-xs font-bold text-fg truncate w-full">{entry.name}</p>
+                  <p className="text-sm font-black font-mono text-fg mt-0.5">{entry.average}</p>
                 </div>
               );
             })}
@@ -171,8 +171,8 @@ export default function CompetitionResults({ params }: PageParams) {
                 <button key={ev} onClick={() => setSelectedEvent(ev)}
                   className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors ${
                     selectedEvent === ev
-                      ? 'bg-[#00dbe7]/20 border border-[#00dbe7]/50 text-[#00dbe7]'
-                      : 'bg-[#161b22] border border-[#30363d] text-[#8b949e] hover:text-white'
+                      ? 'bg-accent/20 border border-accent/50 text-accent'
+                      : 'bg-elevated border border-line-strong text-muted hover:text-fg'
                   }`}>
                   {ev}
                 </button>
@@ -182,24 +182,24 @@ export default function CompetitionResults({ params }: PageParams) {
         )}
 
         {/* Results table */}
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d]">
+        <div className="bg-surface border border-line rounded-2xl overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-line">
             <Trophy size={14} className="text-amber-400" />
-            <h2 className="font-semibold text-sm text-white">
+            <h2 className="font-semibold text-sm text-fg">
               {selectedEvent} Results
             </h2>
-            <span className="ml-auto text-[10px] text-[#8b949e] font-mono">{results.length} competitors</span>
+            <span className="ml-auto text-[10px] text-muted font-mono">{results.length} competitors</span>
           </div>
 
           {results.length === 0 ? (
-            <div className="py-12 text-center text-[#8b949e] text-sm">
+            <div className="py-12 text-center text-muted text-sm">
               No results yet for this event.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-[#21262d] text-[#8b949e]">
+                  <tr className="border-b border-line text-muted">
                     <th className="px-4 py-2 text-left font-medium">#</th>
                     <th className="px-4 py-2 text-left font-medium">Name</th>
                     <th className="px-4 py-2 text-left font-medium hidden sm:table-cell">WCA ID</th>
@@ -208,42 +208,42 @@ export default function CompetitionResults({ params }: PageParams) {
                     <th className="px-4 py-2 text-right font-medium hidden md:table-cell">Solves</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#21262d]">
+                <tbody className="divide-y divide-line">
                   {results.map(entry => (
                     <tr key={entry.userId}
-                      className="hover:bg-[#161b22] transition-colors">
+                      className="hover:bg-elevated transition-colors">
                       <td className="px-4 py-3 font-mono font-black">
                         {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : entry.rank}
                       </td>
                       <td className="px-4 py-3">
                         <Link href={`/profile/${entry.userId}`}
-                          className="font-semibold text-white hover:text-[#00dbe7] transition-colors">
+                          className="font-semibold text-fg hover:text-accent transition-colors">
                           {entry.name}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-[#8b949e] hidden sm:table-cell font-mono">
+                      <td className="px-4 py-3 text-muted hidden sm:table-cell font-mono">
                         {entry.wcaId && entry.wcaId !== 'NA' ? (
                           <a href={`https://www.worldcubeassociation.org/persons/${entry.wcaId}`}
                             target="_blank" rel="noopener noreferrer"
-                            className="text-[#00dbe7] hover:underline">
+                            className="text-accent hover:underline">
                             {entry.wcaId}
                           </a>
                         ) : '—'}
                       </td>
                       <td className={`px-4 py-3 text-right font-mono font-bold ${
-                        entry.average === 'DNF' ? 'text-red-400' : 'text-white'
+                        entry.average === 'DNF' ? 'text-red-400' : 'text-fg'
                       }`}>
                         {entry.average}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-[#8b949e]">
+                      <td className="px-4 py-3 text-right font-mono text-muted">
                         {entry.best}
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell">
                         <div className="flex gap-1 justify-end">
                           {(entry.solves ?? []).map((s: string, i: number) => (
                             <span key={i}
-                              className={`font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#0b0e11] ${
-                                s === 'DNF' ? 'text-red-400' : 'text-[#8b949e]'
+                              className={`font-mono text-[10px] px-1.5 py-0.5 rounded bg-bg ${
+                                s === 'DNF' ? 'text-red-400' : 'text-muted'
                               }`}>
                               {s}
                             </span>

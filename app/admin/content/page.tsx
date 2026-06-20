@@ -87,67 +87,67 @@ export default function AdminContent() {
   const resetTiers = () => { if (confirm('Reset to default tier thresholds?')) setTiers(DEFAULT_TIERS); };
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-6">
         <div>
-          <Link href="/admin" className="text-xs text-[#8b949e] hover:text-white mb-1 block">← Admin</Link>
+          <Link href="/admin" className="text-xs text-muted hover:text-fg mb-1 block">← Admin</Link>
           <h1 className="text-2xl font-black">Content Management</h1>
         </div>
 
         {/* Announcement Banner */}
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-6 space-y-4">
+        <div className="bg-surface border border-line rounded-2xl p-6 space-y-4">
           <div className="flex items-center gap-2">
             <Bell size={15} className="text-amber-400" />
             <h2 className="font-semibold">Site-wide Announcement Banner</h2>
           </div>
-          <p className="text-xs text-[#8b949e]">Shown across all pages. Leave blank to hide.</p>
+          <p className="text-xs text-muted">Shown across all pages. Leave blank to hide.</p>
           <input type="text" value={announcement} onChange={e => setAnnouncement(e.target.value)}
             placeholder="e.g. Round 2 of Midweek Madness is now open!"
-            className="w-full px-3 py-2.5 bg-[#0b0e11] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+            className="w-full px-3 py-2.5 bg-bg border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
           <button onClick={saveBanner}
-            className="flex items-center gap-2 px-4 py-2 bg-[#00dbe7] hover:bg-[#00c4d0] text-black font-bold text-sm rounded-xl transition-all">
+            className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-black font-bold text-sm rounded-xl transition-all">
             {bannerSaved ? <CheckCircle size={15} /> : <Save size={15} />}
             {bannerSaved ? 'Saved!' : 'Save Banner'}
           </button>
         </div>
 
         {/* Rank Tier Config */}
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-6 space-y-4">
+        <div className="bg-surface border border-line rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Trophy size={15} className="text-[#00dbe7]" />
+              <Trophy size={15} className="text-accent" />
               <h2 className="font-semibold">Rank Tier Thresholds (3x3)</h2>
             </div>
-            <button onClick={resetTiers} className="text-xs text-[#8b949e] hover:text-white transition-colors">
+            <button onClick={resetTiers} className="text-xs text-muted hover:text-fg transition-colors">
               Reset to defaults
             </button>
           </div>
-          <p className="text-xs text-[#8b949e]">
+          <p className="text-xs text-muted">
             Each tier shows its upper bound in seconds. Leave blank for no limit (slowest tier).
             Tiers are auto-sorted ascending on save.
           </p>
 
           {tiersLoading ? (
-            <div className="flex items-center gap-2 py-4 text-[#8b949e]">
+            <div className="flex items-center gap-2 py-4 text-muted">
               <Loader2 size={14} className="animate-spin" /> Loading...
             </div>
           ) : (
             <>
               <div className="space-y-2">
-                <div className="grid grid-cols-[1fr_140px_40px] gap-2 text-[10px] font-mono text-[#8b949e] px-1">
+                <div className="grid grid-cols-[1fr_140px_40px] gap-2 text-[10px] font-mono text-muted px-1">
                   <span>Tier Name</span><span>Max time (seconds)</span><span></span>
                 </div>
                 {tiers.map((tier, i) => (
                   <div key={i} className="grid grid-cols-[1fr_140px_40px] gap-2 items-center">
                     <input type="text" value={tier.name} onChange={e => updateTier(i, 'name', e.target.value)}
-                      className="px-3 py-2 bg-[#0b0e11] border border-[#30363d] rounded-lg text-sm text-white focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                      className="px-3 py-2 bg-bg border border-line-strong rounded-lg text-sm text-fg focus:outline-none focus:border-accent transition-colors" />
                     <input type="number" step="0.01" min="0"
                       value={tier.maxMs >= 999999 ? '' : msToSeconds(tier.maxMs)}
                       onChange={e => updateTier(i, 'maxMs', e.target.value)}
                       placeholder="no limit"
-                      className="w-full px-3 py-2 bg-[#0b0e11] border border-[#30363d] rounded-lg text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                      className="w-full px-3 py-2 bg-bg border border-line-strong rounded-lg text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
                     <button onClick={() => removeTier(i)} disabled={tiers.length <= 1}
-                      className="flex items-center justify-center w-9 h-9 rounded-lg border border-[#30363d] text-[#8b949e] hover:text-red-400 hover:border-red-400/40 transition-colors disabled:opacity-30">
+                      className="flex items-center justify-center w-9 h-9 rounded-lg border border-line-strong text-muted hover:text-red-400 hover:border-red-400/40 transition-colors disabled:opacity-30">
                       <Trash2 size={13} />
                     </button>
                   </div>
@@ -156,21 +156,21 @@ export default function AdminContent() {
 
               <div className="flex items-center gap-3 pt-1">
                 <button onClick={addTier}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[#30363d] rounded-lg text-[#8b949e] hover:text-white hover:bg-[#161b22] transition-all">
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-line-strong rounded-lg text-muted hover:text-fg hover:bg-elevated transition-all">
                   <Plus size={12} /> Add Tier
                 </button>
                 <button onClick={saveTiers} disabled={tiersSaving}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#00dbe7] hover:bg-[#00c4d0] text-black font-bold text-sm rounded-xl transition-all disabled:opacity-60">
+                  className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-black font-bold text-sm rounded-xl transition-all disabled:opacity-60">
                   {tiersSaving ? <Loader2 size={14} className="animate-spin" /> : tiersSaved ? <CheckCircle size={14} /> : <Save size={14} />}
                   {tiersSaved ? 'Saved!' : 'Save Tiers'}
                 </button>
               </div>
 
-              <div className="mt-2 pt-4 border-t border-[#21262d]">
-                <p className="text-[10px] text-[#8b949e] mb-2 font-mono">PREVIEW</p>
+              <div className="mt-2 pt-4 border-t border-line">
+                <p className="text-[10px] text-muted mb-2 font-mono">PREVIEW</p>
                 <div className="flex flex-wrap gap-2">
                   {[...tiers].sort((a, b) => a.maxMs - b.maxMs).map((tier, i) => (
-                    <span key={i} className="text-[11px] px-2.5 py-1 rounded-full border border-[#30363d] text-[#8b949e]">
+                    <span key={i} className="text-[11px] px-2.5 py-1 rounded-full border border-line-strong text-muted">
                       {tier.name}{tier.maxMs < 999999 ? ` — sub-${(tier.maxMs / 1000).toFixed(0)}s` : ' (slowest)'}
                     </span>
                   ))}

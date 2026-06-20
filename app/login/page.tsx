@@ -18,8 +18,8 @@ const SANDBOX_ACCOUNTS = [
     label: 'Athlete',
     email: 'athlete@cubelelo.com',
     description: 'Regular user',
-    color: 'text-[#00dbe7] border-[#00dbe7]/40 hover:bg-[#00dbe7]/10',
-    dot: 'bg-[#00dbe7]',
+    color: 'text-accent border-accent/40 hover:bg-accent/10',
+    dot: 'bg-accent',
   },
 ] as const;
 
@@ -59,25 +59,25 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] flex">
+    <div className="min-h-screen bg-bg flex">
 
       {/* ── Left: Branding ── */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-14 bg-[#0d1117] border-r border-[#21262d]">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-14 bg-surface border-r border-line">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center shadow-lg shadow-[#00dbe7]/20">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-lime flex items-center justify-center shadow-lg shadow-accent/20">
             <span className="text-black font-black text-xs">CB</span>
           </div>
-          <span className="font-bold text-white text-lg">Cube<span className="text-[#00dbe7]">lelo</span></span>
+          <span className="font-bold text-fg text-lg">Cube<span className="text-accent">lelo</span></span>
         </Link>
 
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-5">Elite Speedcubing Platform</p>
-          <h2 className="text-5xl font-black text-white leading-tight mb-5">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-5">Elite Speedcubing Platform</p>
+          <h2 className="text-5xl font-black text-fg leading-tight mb-5">
             Compete.<br />
             Practice.<br />
-            <span className="text-[#00dbe7]">Improve.</span>
+            <span className="text-accent">Improve.</span>
           </h2>
-          <p className="text-[#8b949e] leading-relaxed max-w-sm">
+          <p className="text-muted leading-relaxed max-w-sm">
             WCA-compliant competitions, precision timer, and live leaderboards — built for India's speedcubing community.
           </p>
         </div>
@@ -88,9 +88,9 @@ function LoginForm() {
             { num: '500+', label: 'Competitions' },
             { num: '2M+', label: 'Solves Tracked' },
           ].map(({ num, label }) => (
-            <div key={label} className="text-center p-4 rounded-xl bg-[#161b22] border border-[#21262d]">
-              <p className="font-black text-white text-xl">{num}</p>
-              <p className="text-[10px] text-[#8b949e] font-mono mt-0.5">{label}</p>
+            <div key={label} className="text-center p-4 rounded-xl bg-elevated border border-line">
+              <p className="font-black text-fg text-xl">{num}</p>
+              <p className="text-[10px] text-muted font-mono mt-0.5">{label}</p>
             </div>
           ))}
         </div>
@@ -102,16 +102,16 @@ function LoginForm() {
 
           {/* Mobile logo */}
           <Link href="/" className="flex items-center gap-2 mb-10 lg:hidden">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-lime flex items-center justify-center">
               <span className="text-black font-black text-xs">CB</span>
             </div>
-            <span className="font-bold text-white">Cube<span className="text-[#00dbe7]">lelo</span></span>
+            <span className="font-bold text-fg">Cube<span className="text-accent">lelo</span></span>
           </Link>
 
-          <h1 className="text-3xl font-black text-white mb-1">Welcome back</h1>
-          <p className="text-[#8b949e] text-sm mb-8">
+          <h1 className="text-3xl font-black text-fg mb-1">Welcome back</h1>
+          <p className="text-muted text-sm mb-8">
             New to Cubelelo?{' '}
-            <Link href="/signup" className="text-[#00dbe7] hover:underline font-medium">
+            <Link href="/signup" className="text-accent hover:underline font-medium">
               Create an account
             </Link>
           </p>
@@ -138,9 +138,9 @@ function LoginForm() {
 
 
           <div className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-[#21262d]" />
-            <span className="text-[10px] text-[#8b949e] font-mono">OR</span>
-            <div className="flex-1 h-px bg-[#21262d]" />
+            <div className="flex-1 h-px bg-line" />
+            <span className="text-[10px] text-muted font-mono">OR</span>
+            <div className="flex-1 h-px bg-line" />
           </div>
 
           {/* Email / Password */}
@@ -159,20 +159,20 @@ function LoginForm() {
             else if (res?.url) router.push(res.url);
           }} className="space-y-3">
             <div>
-              <label className="block text-xs text-[#8b949e] mb-1.5">Email</label>
+              <label className="block text-xs text-muted mb-1.5">Email</label>
               <input name="email" type="email" required placeholder="you@example.com"
-                className="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                className="w-full px-3 py-2.5 bg-surface border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs text-[#8b949e]">Password</label>
-                <Link href="/forgot-password" className="text-xs text-[#00dbe7] hover:underline">Forgot password?</Link>
+                <label className="text-xs text-muted">Password</label>
+                <Link href="/forgot-password" className="text-xs text-accent hover:underline">Forgot password?</Link>
               </div>
               <input name="password" type="password" required placeholder="••••••••"
-                className="w-full px-3 py-2.5 bg-[#0d1117] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                className="w-full px-3 py-2.5 bg-surface border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
             </div>
             <button type="submit" disabled={loading !== null}
-              className="w-full py-3 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+              className="w-full py-3 rounded-xl bg-elevated hover:bg-line border border-line-strong text-fg font-semibold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2">
               {loading === 'credentials' ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : null}
               Sign in with Email
             </button>
@@ -180,10 +180,10 @@ function LoginForm() {
 
           {/* Sandbox — dev only */}
           {isDevMode && (
-            <div className="mt-6 rounded-xl border border-dashed border-[#30363d] overflow-hidden">
+            <div className="mt-6 rounded-xl border border-dashed border-line-strong overflow-hidden">
               <button
                 onClick={() => setSandboxOpen(v => !v)}
-                className="w-full flex items-center justify-between px-4 py-3 text-xs font-mono text-[#8b949e] hover:text-white hover:bg-[#161b22] transition-all"
+                className="w-full flex items-center justify-between px-4 py-3 text-xs font-mono text-muted hover:text-fg hover:bg-elevated transition-all"
               >
                 <span className="flex items-center gap-2">
                   <Zap size={12} />
@@ -193,8 +193,8 @@ function LoginForm() {
               </button>
 
               {sandboxOpen && (
-                <div className="px-3 pb-3 space-y-2 border-t border-dashed border-[#30363d]">
-                  <p className="text-[10px] font-mono text-[#8b949e] pt-2.5 pb-1 text-center">
+                <div className="px-3 pb-3 space-y-2 border-t border-dashed border-line-strong">
+                  <p className="text-[10px] font-mono text-muted pt-2.5 pb-1 text-center">
                     no password · dev mode only
                   </p>
                   {SANDBOX_ACCOUNTS.map(({ label, email, description, color, dot }) => (
@@ -223,11 +223,11 @@ function LoginForm() {
             </div>
           )}
 
-          <p className="text-xs text-[#8b949e] text-center mt-8 leading-relaxed">
+          <p className="text-xs text-muted text-center mt-8 leading-relaxed">
             By signing in you agree to our{' '}
-            <Link href="/terms" className="hover:text-white underline transition-colors">Terms</Link>
+            <Link href="/terms" className="hover:text-fg underline transition-colors">Terms</Link>
             {' '}and{' '}
-            <Link href="/privacy" className="hover:text-white underline transition-colors">Privacy Policy</Link>.
+            <Link href="/privacy" className="hover:text-fg underline transition-colors">Privacy Policy</Link>.
           </p>
         </div>
       </div>

@@ -43,40 +43,40 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-2xl mx-auto px-4 py-12">
         {/* Search bar */}
         <form onSubmit={handleSubmit} className="mb-8">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
               autoFocus
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search by name or CL ID…"
-              className="w-full pl-9 pr-4 py-3 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors"
+              className="w-full pl-9 pr-4 py-3 bg-elevated border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors"
             />
           </div>
         </form>
 
         {/* Results */}
         {loading && (
-          <p className="text-center text-sm text-[#8b949e]">Searching…</p>
+          <p className="text-center text-sm text-muted">Searching…</p>
         )}
 
         {!loading && results.length === 0 && query.trim().length >= 2 && (
-          <div className="text-center py-12 text-[#8b949e]">
+          <div className="text-center py-12 text-muted">
             <User size={36} className="mx-auto mb-3 opacity-30" />
             <p className="text-sm">No cubers found for &quot;{query}&quot;</p>
           </div>
         )}
 
         {!loading && results.length > 0 && (
-          <div className="bg-[#0d1117] border border-[#21262d] rounded-xl overflow-hidden">
+          <div className="bg-surface border border-line rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#21262d] text-[#8b949e] text-xs font-semibold uppercase tracking-wider">
+                <tr className="border-b border-line text-muted text-xs font-semibold uppercase tracking-wider">
                   <th className="px-5 py-3 text-left w-10">#</th>
                   <th className="px-3 py-3 text-left">Name</th>
                   <th className="px-3 py-3 text-left">CL ID</th>
@@ -87,22 +87,22 @@ export default function SearchPage() {
                   <tr
                     key={user.clid}
                     onClick={() => router.push(`/profile/${user.clid}`)}
-                    className="border-b border-[#21262d] last:border-0 hover:bg-[#161b22] cursor-pointer transition-colors"
+                    className="border-b border-line last:border-0 hover:bg-elevated cursor-pointer transition-colors"
                   >
-                    <td className="px-5 py-3 text-[#8b949e] font-mono">{i + 1}</td>
+                    <td className="px-5 py-3 text-muted font-mono">{i + 1}</td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
                         {user.avatarUrl ? (
                           <img src={user.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
                         ) : (
-                          <div className="w-7 h-7 rounded-full bg-[#21262d] flex items-center justify-center">
-                            <User size={12} className="text-[#8b949e]" />
+                          <div className="w-7 h-7 rounded-full bg-line flex items-center justify-center">
+                            <User size={12} className="text-muted" />
                           </div>
                         )}
-                        <span className="font-medium text-white capitalize">{user.name}</span>
+                        <span className="font-medium text-fg capitalize">{user.name}</span>
                       </div>
                     </td>
-                    <td className="px-3 py-3 font-mono text-[#00dbe7] text-xs">{user.clid}</td>
+                    <td className="px-3 py-3 font-mono text-accent text-xs">{user.clid}</td>
                   </tr>
                 ))}
               </tbody>
@@ -111,7 +111,7 @@ export default function SearchPage() {
         )}
 
         {results.length > 0 && (
-          <p className="mt-3 text-xs text-[#8b949e] text-center">
+          <p className="mt-3 text-xs text-muted text-center">
             {results.length} result{results.length !== 1 ? 's' : ''} for &quot;{query}&quot;
           </p>
         )}

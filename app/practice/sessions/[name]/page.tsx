@@ -69,25 +69,25 @@ export default function SessionDetailPage({ params }: { params: Promise<{ name: 
 
   if (status === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center">
-        <Link href="/login" className="text-[#00dbe7] hover:underline text-sm">Sign in to view sessions</Link>
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <Link href="/login" className="text-accent hover:underline text-sm">Sign in to view sessions</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
-      <div className="bg-[#0d1117] border-b border-[#21262d] px-4 sm:px-6 py-4">
+    <div className="min-h-screen bg-bg text-fg">
+      <div className="bg-surface border-b border-line px-4 sm:px-6 py-4">
         <div className="max-w-4xl mx-auto">
-          <Link href="/practice/history" className="flex items-center gap-1 text-[#8b949e] hover:text-white text-xs mb-2 transition-colors w-fit">
+          <Link href="/practice/history" className="flex items-center gap-1 text-muted hover:text-fg text-xs mb-2 transition-colors w-fit">
             <ChevronLeft size={14} /> History
           </Link>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers size={18} className="text-[#a3fa00]" />
-              <h1 className="text-xl font-black text-white truncate">{sessionName}</h1>
+              <Layers size={18} className="text-lime" />
+              <h1 className="text-xl font-black text-fg truncate">{sessionName}</h1>
             </div>
-            <button onClick={fetchSolves} className="text-[#8b949e] hover:text-white transition-colors flex-shrink-0">
+            <button onClick={fetchSolves} className="text-muted hover:text-fg transition-colors flex-shrink-0">
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
@@ -105,9 +105,9 @@ export default function SessionDetailPage({ params }: { params: Promise<{ name: 
             { label: 'Ao5', value: ao5 ? fmt(ao5) : '—' },
             { label: 'Ao12', value: ao12 ? fmt(ao12) : '—' },
           ].map(({ label, value }) => (
-            <div key={label} className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 text-center">
-              <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1">{label}</p>
-              <p className="font-mono font-black text-xl text-white">{value}</p>
+            <div key={label} className="bg-surface border border-line rounded-2xl p-4 text-center">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-1">{label}</p>
+              <p className="font-mono font-black text-xl text-fg">{value}</p>
             </div>
           ))}
         </div>
@@ -131,18 +131,18 @@ export default function SessionDetailPage({ params }: { params: Promise<{ name: 
         {/* Solve list */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <RefreshCw size={20} className="animate-spin text-[#8b949e]" />
+            <RefreshCw size={20} className="animate-spin text-muted" />
           </div>
         ) : solves.length === 0 ? (
-          <div className="text-center py-16 text-[#8b949e] text-sm">No solves in this session.</div>
+          <div className="text-center py-16 text-muted text-sm">No solves in this session.</div>
         ) : (
-          <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl overflow-hidden">
-            <div className="flex items-center gap-2 px-5 py-3 border-b border-[#21262d]">
-              <Trophy size={14} className="text-[#8b949e]" />
-              <h3 className="font-semibold text-sm text-white">Solves</h3>
-              <span className="ml-auto text-[10px] text-[#8b949e] font-mono">{solves.length} total</span>
+          <div className="bg-surface border border-line rounded-2xl overflow-hidden">
+            <div className="flex items-center gap-2 px-5 py-3 border-b border-line">
+              <Trophy size={14} className="text-muted" />
+              <h3 className="font-semibold text-sm text-fg">Solves</h3>
+              <span className="ml-auto text-[10px] text-muted font-mono">{solves.length} total</span>
             </div>
-            <div className="divide-y divide-[#21262d]/50">
+            <div className="divide-y divide-line/50">
               {solves.map((s, i) => {
                 const displayMs = s.status === '+2' ? s.timeInMs + 2000 : s.timeInMs;
                 const isBest = s.status !== 'DNF' && displayMs === best;
@@ -151,32 +151,32 @@ export default function SessionDetailPage({ params }: { params: Promise<{ name: 
                   <div key={s._id}>
                     <button
                       onClick={() => setExpanded(isExpanded ? null : s._id)}
-                      className="w-full flex items-center gap-3 px-5 py-3 hover:bg-[#161b22] transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-5 py-3 hover:bg-elevated transition-colors text-left"
                     >
-                      <span className="text-[10px] text-[#8b949e] font-mono w-6 flex-shrink-0">{i + 1}</span>
+                      <span className="text-[10px] text-muted font-mono w-6 flex-shrink-0">{i + 1}</span>
                       <span className={`font-mono text-sm font-bold flex-shrink-0 ${
                         s.status === 'DNF' ? 'text-red-400' :
                         s.status === '+2' ? 'text-amber-400' :
-                        isBest ? 'text-[#a3fa00]' : 'text-white'
+                        isBest ? 'text-lime' : 'text-fg'
                       }`}>
                         {s.status === 'DNF' ? 'DNF' : fmt(displayMs)}
                         {s.status === '+2' && <span className="text-[10px] ml-1">+2</span>}
-                        {isBest && <span className="text-[10px] text-[#a3fa00] ml-1">PB</span>}
+                        {isBest && <span className="text-[10px] text-lime ml-1">PB</span>}
                       </span>
-                      <span className="text-[10px] text-[#8b949e] flex-1 truncate font-mono">
+                      <span className="text-[10px] text-muted flex-1 truncate font-mono">
                         {s.scramble.substring(0, 35)}{s.scramble.length > 35 ? '…' : ''}
                       </span>
-                      <span className="text-[10px] text-[#8b949e] flex-shrink-0">
+                      <span className="text-[10px] text-muted flex-shrink-0">
                         {new Date(s.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </button>
                     {isExpanded && (
                       <div className="px-14 pb-3 space-y-1.5">
-                        <p className="text-xs text-[#8b949e] font-mono break-all leading-relaxed">{s.scramble}</p>
+                        <p className="text-xs text-muted font-mono break-all leading-relaxed">{s.scramble}</p>
                         {s.notes && (
-                          <p className="text-xs text-[#8b949e] italic">"{s.notes}"</p>
+                          <p className="text-xs text-muted italic">"{s.notes}"</p>
                         )}
-                        <p className="text-[10px] text-[#8b949e]">
+                        <p className="text-[10px] text-muted">
                           {new Date(s.createdAt).toLocaleString('en-IN')} · {s.puzzleType}
                         </p>
                       </div>

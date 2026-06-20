@@ -97,13 +97,13 @@ export default function CompetitionDetailPage({ params }: PageParams) {
   };
 
   if (loading) return (
-    <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center">
-      <Loader2 size={24} className="text-[#00dbe7] animate-spin" />
+    <div className="min-h-screen bg-bg flex items-center justify-center">
+      <Loader2 size={24} className="text-accent animate-spin" />
     </div>
   );
   if (!comp) return (
-    <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center text-[#8b949e]">
-      Not found. <Link href="/compete" className="text-[#00dbe7] underline ml-1">Browse competitions</Link>
+    <div className="min-h-screen bg-bg flex items-center justify-center text-muted">
+      Not found. <Link href="/compete" className="text-accent underline ml-1">Browse competitions</Link>
     </div>
   );
 
@@ -115,14 +115,14 @@ export default function CompetitionDetailPage({ params }: PageParams) {
   const feeInr = comp.fee ? `₹${Math.round(comp.fee / 100)}` : 'Free';
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
-        <Link href="/compete" className="inline-flex items-center gap-1 text-[#8b949e] hover:text-white text-xs mb-8 transition-colors">
+        <Link href="/compete" className="inline-flex items-center gap-1 text-muted hover:text-fg text-xs mb-8 transition-colors">
           <ChevronLeft size={14} /> All Competitions
         </Link>
 
         {/* Hero */}
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-6 mb-6">
+        <div className="bg-surface border border-line rounded-2xl p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
             <div className="text-5xl">{getPuzzleEmoji(puzzleType)}</div>
             <div className="flex-1 min-w-0">
@@ -132,9 +132,9 @@ export default function CompetitionDetailPage({ params }: PageParams) {
                   {getStatusLabel(comp.status)}
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">{compName}</h1>
-              {comp.description && <p className="text-sm text-[#8b949e] leading-relaxed mb-3">{comp.description}</p>}
-              <div className="flex flex-wrap gap-4 text-xs text-[#8b949e]">
+              <h1 className="text-2xl sm:text-3xl font-black text-fg mb-2">{compName}</h1>
+              {comp.description && <p className="text-sm text-muted leading-relaxed mb-3">{comp.description}</p>}
+              <div className="flex flex-wrap gap-4 text-xs text-muted">
                 {comp.startDate && (
                   <span className="flex items-center gap-1.5">
                     <Calendar size={12} />
@@ -166,20 +166,20 @@ export default function CompetitionDetailPage({ params }: PageParams) {
                 </div>
               ) : session ? (
                 <button onClick={handleRegister} disabled={regLoading || isCompleted}
-                  className="px-5 py-2.5 rounded-xl bg-[#00dbe7] hover:bg-[#00c4d0] disabled:opacity-50 text-black font-bold text-sm transition-all flex items-center gap-2">
+                  className="px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-50 text-black font-bold text-sm transition-all flex items-center gap-2">
                   {regLoading ? <Loader2 size={15} className="animate-spin" /> : null}
                   {comp.fee > 0 ? `Register — ${feeInr}` : 'Register Free'}
                 </button>
               ) : (
                 <Link href={`/login?callbackUrl=/competitions/${id}`}
-                  className="inline-flex px-5 py-2.5 rounded-xl bg-[#00dbe7] hover:bg-[#00c4d0] text-black font-bold text-sm transition-all">
+                  className="inline-flex px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-black font-bold text-sm transition-all">
                   Sign in to Register
                 </Link>
               )}
               {regError && <p className="text-xs text-red-400 max-w-[160px]">{regError}</p>}
               {(isLive || (registered && comp.status !== 'COMPLETED')) && (
                 <Link href={`/compete/${id}`}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-[#30363d] text-white text-sm hover:bg-[#161b22] transition-all">
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-line-strong text-fg text-sm hover:bg-elevated transition-all">
                   <Zap size={14} /> {isLive ? 'Enter Live Room' : 'Competition Room'}
                 </Link>
               )}
@@ -191,9 +191,9 @@ export default function CompetitionDetailPage({ params }: PageParams) {
         <div className="flex flex-wrap gap-2 mb-6">
           {events.map((e: any) => (
             <div key={e.eventId ?? e}
-              className="flex items-center gap-2 px-3 py-1.5 bg-[#0d1117] border border-[#21262d] rounded-lg text-xs">
+              className="flex items-center gap-2 px-3 py-1.5 bg-surface border border-line rounded-lg text-xs">
               <span>{getPuzzleEmoji(e.eventId ?? e)}</span>
-              <span className="font-mono text-[#8b949e]">{e.eventId ?? e}</span>
+              <span className="font-mono text-muted">{e.eventId ?? e}</span>
               {e.cutoff && <span className="text-amber-400">cutoff {fmtMs(e.cutoff)}</span>}
             </div>
           ))}
@@ -208,11 +208,11 @@ export default function CompetitionDetailPage({ params }: PageParams) {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-[#0d1117] border border-[#21262d] rounded-xl p-1">
+        <div className="flex gap-1 mb-6 bg-surface border border-line rounded-xl p-1">
           {(['overview', 'results', 'rules'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all capitalize ${
-                tab === t ? 'bg-[#161b22] text-white' : 'text-[#8b949e] hover:text-white'
+                tab === t ? 'bg-elevated text-fg' : 'text-muted hover:text-fg'
               }`}>
               {t === 'results' ? '🏆 Results' : t === 'rules' ? '📋 Rules' : '📌 Overview'}
             </button>
@@ -222,41 +222,41 @@ export default function CompetitionDetailPage({ params }: PageParams) {
         {/* Overview */}
         {tab === 'overview' && (
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+            <div className="bg-surface border border-line rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
-                <Calendar size={14} className="text-[#00dbe7]" />
+                <Calendar size={14} className="text-accent" />
                 <h2 className="font-semibold text-sm">Schedule</h2>
               </div>
-              <div className="space-y-2 text-xs text-[#8b949e]">
-                {comp.startDate && <div className="flex justify-between"><span>Start</span><span className="text-white">{new Date(comp.startDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></div>}
-                {comp.endDate && <div className="flex justify-between"><span>End</span><span className="text-white">{new Date(comp.endDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></div>}
-                {comp.registrationDeadline && <div className="flex justify-between"><span>Reg. closes</span><span className="text-white">{new Date(comp.registrationDeadline).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></div>}
-                {comp.rounds && <div className="flex justify-between"><span>Rounds</span><span className="text-white">{comp.rounds}</span></div>}
+              <div className="space-y-2 text-xs text-muted">
+                {comp.startDate && <div className="flex justify-between"><span>Start</span><span className="text-fg">{new Date(comp.startDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></div>}
+                {comp.endDate && <div className="flex justify-between"><span>End</span><span className="text-fg">{new Date(comp.endDate).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></div>}
+                {comp.registrationDeadline && <div className="flex justify-between"><span>Reg. closes</span><span className="text-fg">{new Date(comp.registrationDeadline).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span></div>}
+                {comp.rounds && <div className="flex justify-between"><span>Rounds</span><span className="text-fg">{comp.rounds}</span></div>}
               </div>
             </div>
 
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+            <div className="bg-surface border border-line rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Gift size={14} className="text-amber-400" />
                 <h2 className="font-semibold text-sm">Prizes & Fees</h2>
               </div>
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between"><span className="text-[#8b949e]">Entry Fee</span><span className="text-white font-semibold">{feeInr}</span></div>
+                <div className="flex justify-between"><span className="text-muted">Entry Fee</span><span className="text-fg font-semibold">{feeInr}</span></div>
                 {comp.perEventFee && comp.perEventFee > 0 && (
-                  <div className="flex justify-between"><span className="text-[#8b949e]">Per Event</span><span className="text-white">+₹{Math.round(comp.perEventFee / 100)}</span></div>
+                  <div className="flex justify-between"><span className="text-muted">Per Event</span><span className="text-fg">+₹{Math.round(comp.perEventFee / 100)}</span></div>
                 )}
-                {comp.prize && <div className="flex justify-between"><span className="text-[#8b949e]">Prizes</span><span className="text-white">{comp.prize}</span></div>}
-                {comp.maxEntries && <div className="flex justify-between"><span className="text-[#8b949e]">Max Entries</span><span className="text-white">{comp.maxEntries}</span></div>}
+                {comp.prize && <div className="flex justify-between"><span className="text-muted">Prizes</span><span className="text-fg">{comp.prize}</span></div>}
+                {comp.maxEntries && <div className="flex justify-between"><span className="text-muted">Max Entries</span><span className="text-fg">{comp.maxEntries}</span></div>}
               </div>
             </div>
 
             {comp.description && (
-              <div className="sm:col-span-2 bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+              <div className="sm:col-span-2 bg-surface border border-line rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <FileText size={14} className="text-[#a3fa00]" />
+                  <FileText size={14} className="text-lime" />
                   <h2 className="font-semibold text-sm">About</h2>
                 </div>
-                <p className="text-sm text-[#8b949e] leading-relaxed">{comp.description}</p>
+                <p className="text-sm text-muted leading-relaxed">{comp.description}</p>
               </div>
             )}
           </div>
@@ -264,28 +264,28 @@ export default function CompetitionDetailPage({ params }: PageParams) {
 
         {/* Results */}
         {tab === 'results' && (
-          <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl overflow-hidden">
+          <div className="bg-surface border border-line rounded-2xl overflow-hidden">
             {results.length === 0 ? (
-              <div className="py-12 text-center text-[#8b949e] text-sm">
+              <div className="py-12 text-center text-muted text-sm">
                 <Trophy size={32} className="mx-auto mb-3 opacity-20" />
                 No results yet.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
-                  <thead><tr className="border-b border-[#21262d] text-[#8b949e]">
+                  <thead><tr className="border-b border-line text-muted">
                     <th className="px-4 py-2 text-left">#</th>
                     <th className="px-4 py-2 text-left">Name</th>
                     <th className="px-4 py-2 text-right">ao5</th>
                     <th className="px-4 py-2 text-right">Best</th>
                   </tr></thead>
-                  <tbody className="divide-y divide-[#21262d]">
+                  <tbody className="divide-y divide-line">
                     {results.map((r: any) => (
-                      <tr key={r.userId} className="hover:bg-[#161b22] transition-colors">
+                      <tr key={r.userId} className="hover:bg-elevated transition-colors">
                         <td className="px-4 py-3 font-mono font-black">{r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : r.rank}</td>
-                        <td className="px-4 py-3"><Link href={`/profile/${r.userId}`} className="text-white hover:text-[#00dbe7] font-semibold transition-colors">{r.name}</Link></td>
-                        <td className={`px-4 py-3 text-right font-mono font-bold ${r.average === 'DNF' ? 'text-red-400' : 'text-white'}`}>{r.average}</td>
-                        <td className="px-4 py-3 text-right font-mono text-[#8b949e]">{r.best}</td>
+                        <td className="px-4 py-3"><Link href={`/profile/${r.userId}`} className="text-fg hover:text-accent font-semibold transition-colors">{r.name}</Link></td>
+                        <td className={`px-4 py-3 text-right font-mono font-bold ${r.average === 'DNF' ? 'text-red-400' : 'text-fg'}`}>{r.average}</td>
+                        <td className="px-4 py-3 text-right font-mono text-muted">{r.best}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -297,7 +297,7 @@ export default function CompetitionDetailPage({ params }: PageParams) {
 
         {/* Rules */}
         {tab === 'rules' && (
-          <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-6 text-sm text-[#8b949e] space-y-3 leading-relaxed">
+          <div className="bg-surface border border-line rounded-2xl p-6 text-sm text-muted space-y-3 leading-relaxed">
             {comp.rules ? (
               <div className="whitespace-pre-wrap">{comp.rules}</div>
             ) : (
@@ -311,7 +311,7 @@ export default function CompetitionDetailPage({ params }: PageParams) {
                   'The format is Average of 5 (ao5). The best and worst solves are trimmed.',
                   'Appeals must be submitted within 24 hours of results publication.',
                 ].map((rule, i) => (
-                  <p key={i}><span className="text-[#00dbe7] font-mono mr-2">{String(i + 1).padStart(2, '0')}.</span>{rule}</p>
+                  <p key={i}><span className="text-accent font-mono mr-2">{String(i + 1).padStart(2, '0')}.</span>{rule}</p>
                 ))}
               </div>
             )}
@@ -322,11 +322,11 @@ export default function CompetitionDetailPage({ params }: PageParams) {
         {registered && (
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href={`/compete/${id}/lobby`}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#30363d] text-sm text-[#8b949e] hover:text-white hover:bg-[#161b22] transition-all">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-line-strong text-sm text-muted hover:text-fg hover:bg-elevated transition-all">
               <Users size={14} /> View Lobby
             </Link>
             <Link href={`/compete/${id}/results`}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[#30363d] text-sm text-[#8b949e] hover:text-white hover:bg-[#161b22] transition-all">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-line-strong text-sm text-muted hover:text-fg hover:bg-elevated transition-all">
               <Trophy size={14} /> Results
             </Link>
           </div>

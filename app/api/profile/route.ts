@@ -114,7 +114,7 @@ export async function PATCH(req: NextRequest) {
 
   // Preference / profile fields
   const allowed = ['wcaId', 'city', 'country', 'mobile', 'dob', 'gender', 'socialMedia',
-    'privacyPublic', 'notifEmail', 'notifPush'];
+    'privacyPublic', 'notifEmail', 'notifPush', 'theme'];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) update[key] = body[key];

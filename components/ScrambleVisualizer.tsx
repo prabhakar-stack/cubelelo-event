@@ -46,7 +46,7 @@ export default function ScrambleVisualizer({ scramble, puzzleType, onGenerateNew
     <div className="flex flex-col items-center gap-8 p-6 bg-gray-900 rounded-xl w-full max-w-2xl mx-auto border border-gray-800">
       
       {/* 1. The Scramble Text */}
-      <h2 className="text-2xl md:text-3xl font-mono text-center text-white tracking-wide whitespace-pre-line leading-relaxed">
+      <h2 className="text-2xl md:text-3xl font-mono text-center text-fg tracking-wide whitespace-pre-line leading-relaxed">
         {scramble || "Loading scramble..."}
       </h2>
       

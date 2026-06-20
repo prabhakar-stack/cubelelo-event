@@ -118,16 +118,16 @@ const FAQS = [
 
 export default function FAQsPage() {
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
         <div className="mb-10">
           <div className="flex items-center gap-2 mb-3">
-            <HelpCircle size={20} className="text-[#00dbe7]" />
-            <h1 className="text-3xl font-black text-white">Frequently Asked Questions</h1>
+            <HelpCircle size={20} className="text-accent" />
+            <h1 className="text-3xl font-black text-fg">Frequently Asked Questions</h1>
           </div>
-          <p className="text-[#8b949e]">
+          <p className="text-muted">
             Can&apos;t find your answer here? Email us at{' '}
-            <a href="mailto:support@cubelelo.com" className="text-[#00dbe7] hover:underline">
+            <a href="mailto:support@cubelelo.com" className="text-accent hover:underline">
               support@cubelelo.com
             </a>
           </p>

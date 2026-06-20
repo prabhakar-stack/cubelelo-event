@@ -124,27 +124,27 @@ export default function PracticeHistory() {
 
   if (status === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-[#0b0e11] flex flex-col items-center justify-center gap-4">
-        <p className="text-[#8b949e] text-sm">Sign in to view your practice history.</p>
-        <Link href="/login" className="px-4 py-2 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-sm">Sign in</Link>
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-4">
+        <p className="text-muted text-sm">Sign in to view your practice history.</p>
+        <Link href="/login" className="px-4 py-2 rounded-xl bg-accent/10 border border-accent/30 text-accent text-sm">Sign in</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       {/* Header */}
-      <div className="bg-[#0d1117] border-b border-[#21262d] px-4 sm:px-6 py-4">
+      <div className="bg-surface border-b border-line px-4 sm:px-6 py-4">
         <div className="max-w-5xl mx-auto">
-          <Link href="/practice" className="flex items-center gap-1 text-[#8b949e] hover:text-white text-xs mb-2 transition-colors w-fit">
+          <Link href="/practice" className="flex items-center gap-1 text-muted hover:text-fg text-xs mb-2 transition-colors w-fit">
             <ChevronLeft size={14} /> Practice
           </Link>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <History size={18} className="text-[#a3fa00]" />
-              <h1 className="text-xl font-black text-white">Practice History</h1>
+              <History size={18} className="text-lime" />
+              <h1 className="text-xl font-black text-fg">Practice History</h1>
             </div>
-            <button onClick={fetchSolves} className="text-[#8b949e] hover:text-white transition-colors">
+            <button onClick={fetchSolves} className="text-muted hover:text-fg transition-colors">
               <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
@@ -159,8 +159,8 @@ export default function PracticeHistory() {
             <button key={p} onClick={() => setSelectedPuzzle(p)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold font-mono transition-all ${
                 selectedPuzzle === p
-                  ? 'bg-[#a3fa00] text-black'
-                  : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white'
+                  ? 'bg-lime text-black'
+                  : 'bg-elevated text-muted border border-line-strong hover:text-fg'
               }`}>
               {p}
             </button>
@@ -169,12 +169,12 @@ export default function PracticeHistory() {
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <RefreshCw size={20} className="animate-spin text-[#8b949e]" />
+            <RefreshCw size={20} className="animate-spin text-muted" />
           </div>
         ) : solves.length === 0 ? (
-          <div className="text-center py-16 text-[#8b949e] text-sm">
+          <div className="text-center py-16 text-muted text-sm">
             No {selectedPuzzle} solves yet.{' '}
-            <Link href="/terminal" className="text-[#00dbe7] hover:underline">Start practicing →</Link>
+            <Link href="/terminal" className="text-accent hover:underline">Start practicing →</Link>
           </div>
         ) : (
           <>
@@ -187,20 +187,20 @@ export default function PracticeHistory() {
                 { label: 'Ao5', value: ao5 ? fmt(ao5) : '—' },
                 { label: 'Ao12', value: ao12 ? fmt(ao12) : '—' },
               ].map(({ label, value }) => (
-                <div key={label} className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 text-center">
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1">{label}</p>
-                  <p className="font-mono font-black text-xl text-white">{value}</p>
+                <div key={label} className="bg-surface border border-line rounded-2xl p-4 text-center">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-1">{label}</p>
+                  <p className="font-mono font-black text-xl text-fg">{value}</p>
                 </div>
               ))}
             </div>
 
             {/* Progress chart */}
             {chartTimes.length > 1 && (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+              <div className="bg-surface border border-line rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp size={14} className="text-[#a3fa00]" />
-                  <h3 className="font-semibold text-sm text-white">Progress Trend</h3>
-                  <span className="ml-auto text-[10px] text-[#8b949e]">Last {chartTimes.length} solves</span>
+                  <TrendingUp size={14} className="text-lime" />
+                  <h3 className="font-semibold text-sm text-fg">Progress Trend</h3>
+                  <span className="ml-auto text-[10px] text-muted">Last {chartTimes.length} solves</span>
                 </div>
                 <svg viewBox={`0 0 ${W} ${H + 20}`} className="w-full" style={{ minWidth: '280px' }}>
                   {[0, H / 4, H / 2, (3 * H) / 4, H].map(y => (
@@ -220,25 +220,25 @@ export default function PracticeHistory() {
             )}
 
             {/* Activity heatmap */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+            <div className="bg-surface border border-line rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-4">
-                <Calendar size={14} className="text-[#8b949e]" />
-                <h3 className="font-semibold text-sm text-white">Activity — Last 12 Weeks</h3>
-                <span className="ml-auto text-[10px] text-[#8b949e]">{selectedPuzzle}</span>
+                <Calendar size={14} className="text-muted" />
+                <h3 className="font-semibold text-sm text-fg">Activity — Last 12 Weeks</h3>
+                <span className="ml-auto text-[10px] text-muted">{selectedPuzzle}</span>
               </div>
               <div className="grid grid-rows-7 grid-flow-col gap-1" style={{ gridTemplateRows: 'repeat(7, 1fr)' }}>
                 {heatmap.map(({ date, count }) => {
                   const lvl = count === 0 ? 0 : count < 5 ? 1 : count < 10 ? 2 : count < 20 ? 3 : 4;
-                  const colors = ['bg-[#161b22]', 'bg-[#a3fa00]/20', 'bg-[#a3fa00]/45', 'bg-[#a3fa00]/70', 'bg-[#a3fa00]'];
+                  const colors = ['bg-elevated', 'bg-lime/20', 'bg-lime/45', 'bg-lime/70', 'bg-lime'];
                   return (
                     <div key={date} title={`${date}: ${count} solve${count !== 1 ? 's' : ''}`}
                       className={`w-3 h-3 rounded-sm ${colors[lvl]}`} />
                   );
                 })}
               </div>
-              <div className="flex items-center gap-1.5 mt-3 text-[10px] text-[#8b949e]">
+              <div className="flex items-center gap-1.5 mt-3 text-[10px] text-muted">
                 <span>Less</span>
-                {['bg-[#161b22]', 'bg-[#a3fa00]/20', 'bg-[#a3fa00]/45', 'bg-[#a3fa00]/70', 'bg-[#a3fa00]'].map((c, i) => (
+                {['bg-elevated', 'bg-lime/20', 'bg-lime/45', 'bg-lime/70', 'bg-lime'].map((c, i) => (
                   <div key={i} className={`w-3 h-3 rounded-sm ${c}`} />
                 ))}
                 <span>More</span>
@@ -247,25 +247,25 @@ export default function PracticeHistory() {
 
             {/* Sessions */}
             {sessionList.length > 0 && (
-              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl overflow-hidden">
-                <div className="flex items-center gap-2 px-5 py-3 border-b border-[#21262d]">
-                  <h3 className="font-semibold text-sm text-white">Sessions</h3>
-                  <span className="ml-auto text-[10px] text-[#8b949e]">{sessionList.length} sessions</span>
+              <div className="bg-surface border border-line rounded-2xl overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-3 border-b border-line">
+                  <h3 className="font-semibold text-sm text-fg">Sessions</h3>
+                  <span className="ml-auto text-[10px] text-muted">{sessionList.length} sessions</span>
                 </div>
-                <div className="divide-y divide-[#21262d]">
+                <div className="divide-y divide-line">
                   {sessionList.map(s => (
                     <Link key={s.name}
                       href={`/practice/sessions/${encodeURIComponent(s.name)}?puzzle=${encodeURIComponent(selectedPuzzle)}`}
-                      className="flex items-center gap-3 px-5 py-3 hover:bg-[#161b22] transition-colors group">
+                      className="flex items-center gap-3 px-5 py-3 hover:bg-elevated transition-colors group">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">{s.name}</p>
-                        <p className="text-[10px] text-[#8b949e]">{s.count} solves</p>
+                        <p className="text-sm font-semibold text-fg truncate">{s.name}</p>
+                        <p className="text-[10px] text-muted">{s.count} solves</p>
                       </div>
                       <div className="text-right flex-shrink-0">
                         {s.best && <p className="font-mono text-xs text-amber-400 font-bold">{fmt(s.best)}</p>}
-                        {s.mean && <p className="font-mono text-[10px] text-[#8b949e]">mean {fmt(s.mean)}</p>}
+                        {s.mean && <p className="font-mono text-[10px] text-muted">mean {fmt(s.mean)}</p>}
                       </div>
-                      <ChevronRight size={14} className="text-[#8b949e] group-hover:text-white transition-colors flex-shrink-0" />
+                      <ChevronRight size={14} className="text-muted group-hover:text-fg transition-colors flex-shrink-0" />
                     </Link>
                   ))}
                 </div>
@@ -273,16 +273,16 @@ export default function PracticeHistory() {
             )}
 
             {/* Solve log */}
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl overflow-hidden">
-              <div className="flex items-center gap-2 px-5 py-3 border-b border-[#21262d]">
-                <BarChart2 size={14} className="text-[#8b949e]" />
-                <h3 className="font-semibold text-sm text-white">All Solves</h3>
-                <span className="ml-auto text-[10px] text-[#8b949e]">{solves.length} total</span>
+            <div className="bg-surface border border-line rounded-2xl overflow-hidden">
+              <div className="flex items-center gap-2 px-5 py-3 border-b border-line">
+                <BarChart2 size={14} className="text-muted" />
+                <h3 className="font-semibold text-sm text-fg">All Solves</h3>
+                <span className="ml-auto text-[10px] text-muted">{solves.length} total</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs font-mono">
                   <thead>
-                    <tr className="text-[#8b949e] border-b border-[#21262d]">
+                    <tr className="text-muted border-b border-line">
                       <th className="text-left px-5 py-2">#</th>
                       <th className="text-left px-3 py-2">Time</th>
                       <th className="text-left px-3 py-2 hidden sm:table-cell">Session</th>
@@ -290,26 +290,26 @@ export default function PracticeHistory() {
                       <th className="text-left px-3 py-2 hidden md:table-cell">Scramble</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#21262d]/50">
+                  <tbody className="divide-y divide-line/50">
                     {pagedSolves.map((s, i) => {
                       const displayTime = s.status === '+2' ? s.timeInMs + 2000 : s.timeInMs;
                       return (
-                        <tr key={s._id} className="hover:bg-[#161b22] transition-colors">
-                          <td className="px-5 py-2 text-[#8b949e]">{(page - 1) * PAGE_SIZE + i + 1}</td>
+                        <tr key={s._id} className="hover:bg-elevated transition-colors">
+                          <td className="px-5 py-2 text-muted">{(page - 1) * PAGE_SIZE + i + 1}</td>
                           <td className={`px-3 py-2 font-bold ${
                             s.status === 'DNF' ? 'text-red-400' :
-                            s.status === '+2' ? 'text-amber-400' : 'text-white'
+                            s.status === '+2' ? 'text-amber-400' : 'text-fg'
                           }`}>
                             {s.status === 'DNF' ? 'DNF' : fmt(displayTime)}
                             {s.status === '+2' && <span className="text-[10px] ml-1">+2</span>}
                           </td>
-                          <td className="px-3 py-2 text-[#8b949e] hidden sm:table-cell truncate max-w-[120px]">
+                          <td className="px-3 py-2 text-muted hidden sm:table-cell truncate max-w-[120px]">
                             {s.sessionName ?? 'Default'}
                           </td>
-                          <td className="px-3 py-2 text-[#8b949e]">
+                          <td className="px-3 py-2 text-muted">
                             {new Date(s.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                           </td>
-                          <td className="px-3 py-2 text-[#8b949e] truncate max-w-[200px] hidden md:table-cell">
+                          <td className="px-3 py-2 text-muted truncate max-w-[200px] hidden md:table-cell">
                             {s.scramble.substring(0, 30)}{s.scramble.length > 30 ? '…' : ''}
                           </td>
                         </tr>
@@ -320,12 +320,12 @@ export default function PracticeHistory() {
               </div>
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between px-5 py-3 border-t border-[#21262d]">
+                <div className="flex items-center justify-between px-5 py-3 border-t border-line">
                   <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                    className="text-xs text-[#8b949e] hover:text-white disabled:opacity-30 transition-colors">← Prev</button>
-                  <span className="text-xs text-[#8b949e] font-mono">{page} / {totalPages}</span>
+                    className="text-xs text-muted hover:text-fg disabled:opacity-30 transition-colors">← Prev</button>
+                  <span className="text-xs text-muted font-mono">{page} / {totalPages}</span>
                   <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                    className="text-xs text-[#8b949e] hover:text-white disabled:opacity-30 transition-colors">Next →</button>
+                    className="text-xs text-muted hover:text-fg disabled:opacity-30 transition-colors">Next →</button>
                 </div>
               )}
             </div>

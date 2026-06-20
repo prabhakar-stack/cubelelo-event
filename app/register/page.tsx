@@ -54,24 +54,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] flex">
+    <div className="min-h-screen bg-bg flex">
 
       {/* Left branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-14 bg-[#0d1117] border-r border-[#21262d]">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-14 bg-surface border-r border-line">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center shadow-lg shadow-[#00dbe7]/20">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-lime flex items-center justify-center shadow-lg shadow-accent/20">
             <span className="text-black font-black text-xs">CB</span>
           </div>
-          <span className="font-bold text-white text-lg">Cube<span className="text-[#00dbe7]">lelo</span></span>
+          <span className="font-bold text-fg text-lg">Cube<span className="text-accent">lelo</span></span>
         </Link>
 
         <div>
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-5">Join the Community</p>
-          <h2 className="text-5xl font-black text-white leading-tight mb-5">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted mb-5">Join the Community</p>
+          <h2 className="text-5xl font-black text-fg leading-tight mb-5">
             Your cubing<br />journey<br />
-            <span className="text-[#a3fa00]">starts here.</span>
+            <span className="text-lime">starts here.</span>
           </h2>
-          <p className="text-[#8b949e] leading-relaxed max-w-sm">
+          <p className="text-muted leading-relaxed max-w-sm">
             Get your unique Cubelelo ID, compete in live WCA-style events, and track every solve on your journey to the top.
           </p>
         </div>
@@ -82,11 +82,11 @@ export default function RegisterPage() {
             { emoji: '⏱️', title: 'Precision timer', desc: 'Web Worker accuracy, ao5 / ao12, PB tracking' },
             { emoji: '📈', title: 'Full history', desc: 'Every solve, every session, every PB' },
           ].map(({ emoji, title, desc }) => (
-            <div key={title} className="flex items-center gap-3 p-3.5 rounded-xl bg-[#161b22] border border-[#21262d]">
+            <div key={title} className="flex items-center gap-3 p-3.5 rounded-xl bg-elevated border border-line">
               <span className="text-2xl">{emoji}</span>
               <div>
-                <p className="text-sm font-semibold text-white">{title}</p>
-                <p className="text-xs text-[#8b949e]">{desc}</p>
+                <p className="text-sm font-semibold text-fg">{title}</p>
+                <p className="text-xs text-muted">{desc}</p>
               </div>
             </div>
           ))}
@@ -98,25 +98,25 @@ export default function RegisterPage() {
         <div className="w-full max-w-sm">
 
           <Link href="/" className="flex items-center gap-2 mb-10 lg:hidden">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-lime flex items-center justify-center">
               <span className="text-black font-black text-xs">CB</span>
             </div>
-            <span className="font-bold text-white">Cube<span className="text-[#00dbe7]">lelo</span></span>
+            <span className="font-bold text-fg">Cube<span className="text-accent">lelo</span></span>
           </Link>
 
-          <h1 className="text-3xl font-black text-white mb-1">Create your account</h1>
-          <p className="text-[#8b949e] text-sm mb-8">
+          <h1 className="text-3xl font-black text-fg mb-1">Create your account</h1>
+          <p className="text-muted text-sm mb-8">
             Already have one?{' '}
-            <Link href="/login" className="text-[#00dbe7] hover:underline font-medium">Sign in</Link>
+            <Link href="/login" className="text-accent hover:underline font-medium">Sign in</Link>
             {' · '}
-            <Link href="/register/migrate" className="text-[#8b949e] hover:text-white transition-colors">Claim existing account</Link>
+            <Link href="/register/migrate" className="text-muted hover:text-fg transition-colors">Claim existing account</Link>
           </p>
 
           {success ? (
             <div className="flex flex-col items-center gap-3 py-10">
               <CheckCircle2 size={40} className="text-emerald-400" />
-              <p className="text-white font-semibold">Account created!</p>
-              <p className="text-[#8b949e] text-sm">Signing you in…</p>
+              <p className="text-fg font-semibold">Account created!</p>
+              <p className="text-muted text-sm">Signing you in…</p>
             </div>
           ) : (
             <>
@@ -130,51 +130,51 @@ export default function RegisterPage() {
               </button>
 
               <div className="flex items-center gap-3 mb-5">
-                <div className="flex-1 h-px bg-[#21262d]" />
-                <span className="text-[10px] text-[#8b949e] font-mono uppercase">or</span>
-                <div className="flex-1 h-px bg-[#21262d]" />
+                <div className="flex-1 h-px bg-line" />
+                <span className="text-[10px] text-muted font-mono uppercase">or</span>
+                <div className="flex-1 h-px bg-line" />
               </div>
 
               {/* Email form */}
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-[#8b949e] mb-1">First name</label>
+                    <label className="block text-xs text-muted mb-1">First name</label>
                     <input type="text" value={form.firstName} onChange={set('firstName')} required
-                      className="w-full px-3 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                      className="w-full px-3 py-2.5 rounded-xl bg-elevated border border-line-strong text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-xs text-[#8b949e] mb-1">Last name</label>
+                    <label className="block text-xs text-muted mb-1">Last name</label>
                     <input type="text" value={form.lastName} onChange={set('lastName')}
-                      className="w-full px-3 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                      className="w-full px-3 py-2.5 rounded-xl bg-elevated border border-line-strong text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#8b949e] mb-1">Email</label>
+                  <label className="block text-xs text-muted mb-1">Email</label>
                   <input type="email" value={form.email} onChange={set('email')} required autoComplete="email"
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                    className="w-full px-3 py-2.5 rounded-xl bg-elevated border border-line-strong text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#8b949e] mb-1">Password</label>
+                  <label className="block text-xs text-muted mb-1">Password</label>
                   <div className="relative">
                     <input type={showPw ? 'text' : 'password'} value={form.password} onChange={set('password')}
                       required minLength={8} autoComplete="new-password"
                       placeholder="Min 8 characters"
-                      className="w-full px-3 py-2.5 pr-10 rounded-xl bg-[#161b22] border border-[#30363d] text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                      className="w-full px-3 py-2.5 pr-10 rounded-xl bg-elevated border border-line-strong text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
                     <button type="button" onClick={() => setShowPw(!showPw)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b949e] hover:text-white transition-colors">
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-fg transition-colors">
                       {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-[#8b949e] mb-1">Confirm password</label>
+                  <label className="block text-xs text-muted mb-1">Confirm password</label>
                   <input type="password" value={form.confirm} onChange={set('confirm')} required
                     autoComplete="new-password"
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors" />
+                    className="w-full px-3 py-2.5 rounded-xl bg-elevated border border-line-strong text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors" />
                 </div>
 
                 {error && (
@@ -185,16 +185,16 @@ export default function RegisterPage() {
                 )}
 
                 <button type="submit" disabled={loading}
-                  className="w-full py-3 rounded-xl bg-[#00dbe7] text-black font-bold text-sm hover:bg-[#00dbe7]/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-1">
+                  className="w-full py-3 rounded-xl bg-accent text-black font-bold text-sm hover:bg-accent/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-1">
                   {loading ? 'Creating account…' : 'Create Account'}
                 </button>
               </form>
 
-              <p className="text-xs text-[#8b949e] text-center mt-6 leading-relaxed">
+              <p className="text-xs text-muted text-center mt-6 leading-relaxed">
                 By signing up you agree to our{' '}
-                <Link href="/terms" className="hover:text-white underline transition-colors">Terms</Link>
+                <Link href="/terms" className="hover:text-fg underline transition-colors">Terms</Link>
                 {' '}and{' '}
-                <Link href="/privacy" className="hover:text-white underline transition-colors">Privacy Policy</Link>.
+                <Link href="/privacy" className="hover:text-fg underline transition-colors">Privacy Policy</Link>.
               </p>
             </>
           )}

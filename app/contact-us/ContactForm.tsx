@@ -26,35 +26,35 @@ export default function ContactForm() {
   }
 
   return (
-    <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl overflow-hidden">
-      <div className="px-6 py-4 border-b border-[#21262d]">
-        <h2 className="font-bold text-white text-sm">Send a Message</h2>
-        <p className="text-xs text-[#8b949e] mt-0.5">We read every message. Please be specific about your issue.</p>
+    <div className="bg-surface border border-line rounded-2xl overflow-hidden">
+      <div className="px-6 py-4 border-b border-line">
+        <h2 className="font-bold text-fg text-sm">Send a Message</h2>
+        <p className="text-xs text-muted mt-0.5">We read every message. Please be specific about your issue.</p>
       </div>
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs text-[#8b949e] mb-1.5">Name</label>
+            <label className="block text-xs text-muted mb-1.5">Name</label>
             <input
               name="name" value={form.name} onChange={handleChange} required
               placeholder="Your name"
-              className="w-full bg-[#161b22] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7]/50 transition-colors"
+              className="w-full bg-elevated border border-line-strong rounded-lg px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-accent/50 transition-colors"
             />
           </div>
           <div>
-            <label className="block text-xs text-[#8b949e] mb-1.5">Email</label>
+            <label className="block text-xs text-muted mb-1.5">Email</label>
             <input
               name="email" type="email" value={form.email} onChange={handleChange} required
               placeholder="your@email.com"
-              className="w-full bg-[#161b22] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7]/50 transition-colors"
+              className="w-full bg-elevated border border-line-strong rounded-lg px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-accent/50 transition-colors"
             />
           </div>
         </div>
         <div>
-          <label className="block text-xs text-[#8b949e] mb-1.5">Subject</label>
+          <label className="block text-xs text-muted mb-1.5">Subject</label>
           <select
             name="subject" value={form.subject} onChange={handleChange} required
-            className="w-full bg-[#161b22] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00dbe7]/50 transition-colors"
+            className="w-full bg-elevated border border-line-strong rounded-lg px-3 py-2 text-sm text-fg focus:outline-none focus:border-accent/50 transition-colors"
           >
             <option value="">Select a subject…</option>
             <option>Payment / Registration Issue</option>
@@ -67,11 +67,11 @@ export default function ContactForm() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-[#8b949e] mb-1.5">Message</label>
+          <label className="block text-xs text-muted mb-1.5">Message</label>
           <textarea
             name="message" value={form.message} onChange={handleChange} required rows={5}
             placeholder="Describe your issue in detail. For payment problems, include your CL ID and payment reference number."
-            className="w-full bg-[#161b22] border border-[#30363d] rounded-lg px-3 py-2 text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7]/50 transition-colors resize-none"
+            className="w-full bg-elevated border border-line-strong rounded-lg px-3 py-2 text-sm text-fg placeholder-muted focus:outline-none focus:border-accent/50 transition-colors resize-none"
           />
         </div>
         {status === 'sent' ? (
@@ -86,7 +86,7 @@ export default function ContactForm() {
           <button
             type="submit"
             disabled={status === 'sending'}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#00dbe7] hover:bg-[#00c4d0] disabled:opacity-60 text-black font-bold text-sm transition-all"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-accent hover:bg-accent-hover disabled:opacity-60 text-black font-bold text-sm transition-all"
           >
             {status === 'sending' ? (
               <><Loader2 size={14} className="animate-spin" /> Sending…</>

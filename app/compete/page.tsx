@@ -76,15 +76,15 @@ export default function CompeteLobby() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0e11] text-white">
+    <div className="min-h-screen bg-bg text-fg">
       {/* Header */}
-      <div className="bg-[#0d1117] border-b border-[#21262d] px-4 sm:px-6 py-6">
+      <div className="bg-surface border-b border-line px-4 sm:px-6 py-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Trophy size={20} className="text-amber-400" />
-                <h1 className="text-2xl font-black text-white">Competitions</h1>
+                <h1 className="text-2xl font-black text-fg">Competitions</h1>
                 {liveCount > 0 && (
                   <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-bold">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -92,13 +92,13 @@ export default function CompeteLobby() {
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[#8b949e]">
+              <p className="text-sm text-muted">
                 {openCount} open · WCA-style online events
               </p>
             </div>
             <button
               onClick={fetchCompetitions}
-              className="p-2 rounded-lg text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all"
+              className="p-2 rounded-lg text-muted hover:text-fg hover:bg-line transition-all"
               title="Refresh"
             >
               <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
@@ -108,13 +108,13 @@ export default function CompeteLobby() {
           {/* Search + Filters */}
           <div className="flex flex-wrap gap-3 items-center">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search competitions..."
-                className="w-full pl-8 pr-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] transition-colors"
+                className="w-full pl-8 pr-3 py-2 bg-elevated border border-line-strong rounded-xl text-sm text-fg placeholder-muted focus:outline-none focus:border-accent transition-colors"
               />
             </div>
 
@@ -125,8 +125,8 @@ export default function CompeteLobby() {
                   onClick={() => setStatusFilter(value)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     statusFilter === value
-                      ? 'bg-[#00dbe7] text-black font-bold'
-                      : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white'
+                      ? 'bg-accent text-black font-bold'
+                      : 'bg-elevated text-muted border border-line-strong hover:text-fg'
                   }`}
                 >
                   {label}
@@ -142,7 +142,7 @@ export default function CompeteLobby() {
                   className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all ${
                     puzzleFilter === p
                       ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40'
-                      : 'text-[#8b949e] hover:text-white'
+                      : 'text-muted hover:text-fg'
                   }`}
                 >
                   {p === 'All' ? p : `${getPuzzleEmoji(p)} ${p}`}
@@ -157,7 +157,7 @@ export default function CompeteLobby() {
       {/* Competition Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {loading && (
-          <div className="text-center py-16 text-[#8b949e]">
+          <div className="text-center py-16 text-muted">
             <RefreshCw size={32} className="mx-auto mb-3 animate-spin opacity-40" />
             <p className="text-sm">Loading competitions...</p>
           </div>
@@ -166,20 +166,20 @@ export default function CompeteLobby() {
           <div className="text-center py-16">
             <WifiOff size={40} className="mx-auto mb-3 text-red-400/40" />
             <p className="text-sm text-red-400">{error}</p>
-            <p className="text-xs text-[#8b949e] mt-1">Make sure MONGODB_URI is set in your .env</p>
-            <button onClick={fetchCompetitions} className="mt-4 px-4 py-2 rounded-xl text-xs text-[#00dbe7] border border-[#00dbe7]/30 hover:bg-[#00dbe7]/10 transition-all">Retry</button>
+            <p className="text-xs text-muted mt-1">Make sure MONGODB_URI is set in your .env</p>
+            <button onClick={fetchCompetitions} className="mt-4 px-4 py-2 rounded-xl text-xs text-accent border border-accent/30 hover:bg-accent/10 transition-all">Retry</button>
           </div>
         )}
         {!loading && !error && (
           <>
             {filtered.length === 0 ? (
-              <div className="text-center py-16 text-[#8b949e]">
+              <div className="text-center py-16 text-muted">
                 <Trophy size={40} className="mx-auto mb-3 opacity-30" />
                 <p className="text-sm">{competitions.length === 0 ? 'No competitions yet.' : 'No competitions match your filters.'}</p>
               </div>
             ) : (
               <>
-                <p className="text-xs text-[#8b949e] mb-4 font-mono">Showing {filtered.length} of {competitions.length} competitions</p>
+                <p className="text-xs text-muted mb-4 font-mono">Showing {filtered.length} of {competitions.length} competitions</p>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filtered.map(comp => (
                     <CompetitionCard
@@ -213,25 +213,25 @@ export default function CompeteLobby() {
       <Modal isOpen={registerModal !== null} onClose={() => setRegisterModal(null)} title={`Register — ${registerModal?.name}`} size="md">
         {registerModal && (
           <div className="p-5 space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-[#161b22] rounded-xl border border-[#21262d]">
+            <div className="flex items-center gap-3 p-3 bg-elevated rounded-xl border border-line">
               <span className="text-2xl">{getPuzzleEmoji(registerModal.events[0])}</span>
               <div>
-                <p className="text-sm font-semibold text-white">{registerModal.name}</p>
-                <p className="text-xs text-[#8b949e]">{registerModal.events.join(', ')} · {registerModal.rounds} round{registerModal.rounds !== 1 ? 's' : ''}</p>
+                <p className="text-sm font-semibold text-fg">{registerModal.name}</p>
+                <p className="text-xs text-muted">{registerModal.events.join(', ')} · {registerModal.rounds} round{registerModal.rounds !== 1 ? 's' : ''}</p>
               </div>
             </div>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between py-2 border-b border-[#21262d]">
-                <span className="text-[#8b949e]">Entry Fee</span>
-                <span className="font-bold text-white">{registerModal.isFree ? 'FREE' : `₹${registerModal.baseFee}`}</span>
+              <div className="flex justify-between py-2 border-b border-line">
+                <span className="text-muted">Entry Fee</span>
+                <span className="font-bold text-fg">{registerModal.isFree ? 'FREE' : `₹${registerModal.baseFee}`}</span>
               </div>
-              <div className="flex justify-between py-2 border-b border-[#21262d]">
-                <span className="text-[#8b949e]">Registered as</span>
-                <span className="font-semibold text-[#00dbe7]">{session?.user?.name}</span>
+              <div className="flex justify-between py-2 border-b border-line">
+                <span className="text-muted">Registered as</span>
+                <span className="font-semibold text-accent">{session?.user?.name}</span>
               </div>
             </div>
             <button onClick={() => { alert('Registration coming soon.'); setRegisterModal(null); }}
-              className="w-full py-3 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] font-bold text-sm hover:bg-[#00dbe7]/20 transition-all">
+              className="w-full py-3 rounded-xl bg-accent/10 border border-accent/30 text-accent font-bold text-sm hover:bg-accent/20 transition-all">
               {registerModal.isFree ? 'Register Free' : `Pay ₹${registerModal.baseFee} & Register`}
             </button>
           </div>
