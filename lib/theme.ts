@@ -7,6 +7,8 @@ export function applyTheme(t: Theme): void {
   if (typeof document === 'undefined') return;
   document.documentElement.classList.toggle('light', t === 'light');
   try { localStorage.setItem(KEY, t); } catch { /* ignore */ }
+  // Notify any mounted toggles (navbar, settings) so they stay in sync.
+  try { window.dispatchEvent(new CustomEvent('cl:themechange', { detail: t })); } catch { /* ignore */ }
 }
 
 /** Read the locally-stored theme; defaults to dark. */

@@ -18,6 +18,7 @@ import {
   UserPlus,
   Search,
 } from 'lucide-react';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 const NAV_LINKS = [
   { href: '/timer', label: 'Timer', icon: Timer, description: 'Practice & Sessions' },
@@ -99,6 +100,9 @@ export default function NavBar() {
 
         {/* Right: Auth */}
         <div className="flex items-center gap-2">
+          {/* Appearance toggle */}
+          <ThemeToggle />
+
           {status === 'loading' ? (
             <div className="w-8 h-8 rounded-full bg-line animate-pulse" />
           ) : session ? (
