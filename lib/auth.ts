@@ -4,32 +4,24 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { MongoDBAdapter } from '@auth/mongodb-adapter';
 import clientPromise from '@/lib/mongodb';
 
-// ─── Admin emails (full access) ───────────────────────────────────────────────
 const ADMIN_EMAILS = ['prabhakar@cubelelo.com'];
 
-// ─── Dev Bypass User ──────────────────────────────────────────────────────────
-// When NEXTAUTH_DEV_BYPASS=true, clicking "Dev Bypass" logs in as admin.
-const DEV_BYPASS_USER = {
-  id: 'dev-bypass-user',
-  name: 'Dev Admin (Prabhakar)',
-  email: 'prabhakar@cubelelo.com',
-  image: 'https://api.dicebear.com/8.x/avataaars/svg?seed=cubelelo',
-};
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  // Use MongoDB adapter when MONGODB_URI is provided; else JWT-only (dev bypass)
   adapter: process.env.MONGODB_URI ? MongoDBAdapter(clientPromise) : undefined,
+
+  // JWT always — required for CredentialsProvider (dev bypass)
+  session: { strategy: 'jwt' },
 
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
       authorization: {
-        params: { prompt: 'consent', access_type: 'offline', response_type: 'code' },
+        params: { prompt: 'select_account' },
       },
     }),
 
-    // Dev bypass — enabled with NEXTAUTH_DEV_BYPASS=true
+    // Dev sandbox — one-click login without Google OAuth
     CredentialsProvider({
       id: 'dev-bypass',
       name: 'Dev Bypass',
@@ -38,82 +30,69 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         if (process.env.NEXTAUTH_DEV_BYPASS !== 'true') return null;
-        const email = (credentials?.email as string) || DEV_BYPASS_USER.email;
+        const email = (credentials?.email as string) ?? 'prabhakar@cubelelo.com';
+        const isAdmin = ADMIN_EMAILS.includes(email);
         return {
-          ...DEV_BYPASS_USER,
+          id: `dev-${email}`,
+          name: isAdmin ? 'Prabhakar (Admin)' : 'Dev Athlete',
           email,
-          role: ADMIN_EMAILS.includes(email) ? 'ADMIN' : 'ATHLETE',
+          image: `https://api.dicebear.com/8.x/avataaars/svg?seed=${encodeURIComponent(email)}`,
+          role: isAdmin ? 'admin' : 'user',
+          userId: isAdmin ? 'CL0001' : 'CL0002',
         };
       },
     }),
   ],
 
-  session: {
-    strategy: process.env.MONGODB_URI ? 'database' : 'jwt',
-  },
-
   callbacks: {
-    async session({ session, token, user }) {
-      if (session.user) {
-        const email = session.user.email ?? '';
+    async jwt({ token, user, account }) {
+      if (user) {
+        // First sign-in — enrich token from DB
+        token.id = user.id;
+        token.role = (user as any).role ?? 'user';
+        token.userId = (user as any).userId ?? null;
+      }
 
-        // ── database strategy (MongoDB connected) ──
-        if (user) {
-          session.user.id = user.id;
-          session.user.role = ADMIN_EMAILS.includes(email)
-            ? 'ADMIN'
-            : ((user as any).role ?? 'ATHLETE');
+      // After OAuth sign-in: pull role + userId from existing Cubelelo user collection
+      if (account?.type === 'oauth' && process.env.MONGODB_URI) {
+        try {
+          const { connectDB } = await import('@/lib/mongoose');
+          const { User } = await import('@/lib/models/User');
+          await connectDB();
+          const dbUser = await User.findOne({ email: token.email?.toLowerCase() });
+          if (dbUser) {
+            token.role = dbUser.role ?? 'user';
+            token.userId = dbUser.userId ?? null;
+            token.name = dbUser.name
+              ? `${dbUser.name.firstName ?? ''} ${dbUser.name.lastName ?? ''}`.trim()
+              : token.name;
+            token.picture = dbUser.profilePicture ?? token.picture;
+          }
+          // Force admin for known admin emails
+          if (ADMIN_EMAILS.includes(token.email ?? '')) token.role = 'admin';
+        } catch (err) {
+          console.error('[auth] jwt callback DB lookup error:', err);
         }
+      }
 
-        // ── JWT strategy (dev bypass / no DB) ──
-        if (token) {
-          session.user.id = token.sub ?? 'dev-bypass-user';
-          session.user.role = ADMIN_EMAILS.includes(email)
-            ? 'ADMIN'
-            : ((token.role as string) ?? 'ATHLETE');
-        }
+        return token;
+    },
+
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.sub ?? '';
+        session.user.role = (token.role as string) ?? 'user';
+        session.user.userId = (token.userId as string | null) ?? null;
+        // Sync name/image enriched from DB
+        if (token.name)    session.user.name  = token.name  as string;
+        if (token.picture) session.user.image = token.picture as string;
       }
       return session;
-    },
-
-    async jwt({ token, user }) {
-      if (user) {
-        const email = (user as any).email ?? '';
-        token.role = ADMIN_EMAILS.includes(email)
-          ? 'ADMIN'
-          : ((user as any).role ?? 'ATHLETE');
-      }
-      return token;
-    },
-  },
-
-  events: {
-    /**
-     * Fires once when a user is created via OAuth for the first time.
-     * Seeds the CL ID and role in our own User collection.
-     */
-    async createUser({ user }) {
-      if (!process.env.MONGODB_URI) return;
-      try {
-        const { connectDB } = await import('@/lib/mongoose');
-        const { User } = await import('@/lib/models/User');
-        await connectDB();
-        const role = ADMIN_EMAILS.includes(user.email ?? '') ? 'ADMIN' : 'ATHLETE';
-        await User.findOneAndUpdate(
-          { email: user.email },
-          { $setOnInsert: { email: user.email }, $set: { name: user.name, image: user.image, role } },
-          { upsert: true, new: true }
-        );
-      } catch (err) {
-        console.error('[auth] createUser event error:', err);
-      }
     },
   },
 
   pages: {
-    signIn: '/',
-    error: '/',
+    signIn: '/login',
+    error: '/login',
   },
-
-  secret: process.env.NEXTAUTH_SECRET ?? 'dev-secret-change-in-production',
 });

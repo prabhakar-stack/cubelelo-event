@@ -1,14 +1,22 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Trophy, Download, Share2, Medal } from 'lucide-react';
-import { getPuzzleEmoji } from '@/app/compete/page';
+import { ChevronLeft, Trophy, Loader2, Medal } from 'lucide-react';
+import { getPuzzleEmoji } from '@/lib/utils/competition';
 
-function formatTime(ms: number | null): string {
-  if (ms === null) return 'DNF';
-  const s = Math.floor(ms / 1000);
-  const milli = ms % 1000;
+const DNF_SENTINEL = 360000;
+
+function formatTime(ms: number | string | null): string {
+  if (ms === null || ms === undefined) return '—';
+  const n = Number(ms);
+  if (isNaN(n) || n >= DNF_SENTINEL) return 'DNF';
+  const s = Math.floor(n / 1000);
+  const milli = n % 1000;
+  const min = Math.floor(s / 60);
+  if (min > 0) {
+    return `${min}:${(s % 60).toString().padStart(2, '0')}.${milli.toString().padStart(3, '0')}`;
+  }
   return `${s}.${milli.toString().padStart(3, '0')}`;
 }
 
@@ -16,152 +24,204 @@ interface PageParams {
   params: Promise<{ id: string }>;
 }
 
+interface ResultEntry {
+  rank: number;
+  userId: string;
+  name: string;
+  wcaId: string;
+  country: string;
+  average: string;
+  best: string;
+  solves: string[];
+  eventId: string;
+  flagStatus?: string;
+}
+
 export default function CompetitionResults({ params }: PageParams) {
   const { id } = use(params);
-  const [competition, setCompetition] = React.useState<any>(null);
+  const [competition, setCompetition] = useState<any>(null);
+  const [results, setResults] = useState<ResultEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<string>('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch(`/api/competitions/${id}`)
       .then(r => r.json())
-      .then(d => setCompetition(d.competition))
-      .catch(() => {});
+      .then(d => {
+        const comp = d.competition;
+        setCompetition(comp);
+        const firstEvent = comp?.events?.[0]?.eventId ?? comp?.events?.[0] ?? '';
+        setSelectedEvent(firstEvent);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [id]);
 
-  if (!competition) {
+  useEffect(() => {
+    if (!competition) return;
+    const compId = competition.competitionId ?? id;
+    fetch(`/api/competitions/${compId}/leaderboard?eventId=${selectedEvent}`)
+      .then(r => r.json())
+      .then(d => setResults(d.leaderboard ?? []))
+      .catch(() => {});
+  }, [competition, id, selectedEvent]);
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center text-[#8b949e]">
-        <span>Loading...</span>
+      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center">
+        <Loader2 size={24} className="text-[#00dbe7] animate-spin" />
       </div>
     );
   }
 
-  const sorted: any[] = competition.solveResults ?? [];
+  if (!competition) {
+    return (
+      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center text-[#8b949e]">
+        Competition not found.{' '}
+        <Link href="/compete" className="text-[#00dbe7] underline ml-1">Back</Link>
+      </div>
+    );
+  }
+
+  const compName = competition.name ?? competition.competitionName;
+  const events: any[] = competition.events ?? [];
+  const puzzleType = competition.puzzleType ?? selectedEvent ?? '3x3x3';
 
   return (
     <div className="min-h-screen bg-[#0b0e11] text-white">
-      {/* Header */}
-      <div className="bg-[#0d1117] border-b border-[#21262d] px-4 sm:px-6 py-4">
-        <div className="max-w-4xl mx-auto">
-          <Link href="/compete" className="flex items-center gap-1 text-[#8b949e] hover:text-white text-xs mb-3 transition-colors w-fit">
-            <ChevronLeft size={14} /> Back to Lobby
-          </Link>
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">{getPuzzleEmoji(competition.events?.[0] ?? '3x3x3')}</span>
-              <div>
-                <h1 className="text-xl font-black text-white">{competition.name}</h1>
-                <p className="text-xs text-[#8b949e]">
-                  {competition.events?.join(', ')} · {competition.rounds} rounds · Final Results
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => alert('Certificate download coming soon!')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161b22] border border-[#30363d] text-xs text-[#8b949e] hover:text-white transition-all"
-              >
-                <Download size={13} /> Certificate
-              </button>
-              <button
-                onClick={() => navigator.share?.({ title: competition.name, url: window.location.href })}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161b22] border border-[#30363d] text-xs text-[#8b949e] hover:text-white transition-all"
-              >
-                <Share2 size={13} /> Share
-              </button>
-            </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+
+        <Link href={`/compete/${id}`}
+          className="inline-flex items-center gap-1 text-[#8b949e] hover:text-white text-xs mb-8 transition-colors">
+          <ChevronLeft size={14} /> Back to competition
+        </Link>
+
+        {/* Header */}
+        <div className="flex items-start gap-4 mb-8">
+          <div className="text-4xl">{getPuzzleEmoji(puzzleType)}</div>
+          <div>
+            <h1 className="text-2xl font-black text-white mb-1">{compName}</h1>
+            <p className="text-sm text-[#8b949e]">Official Results</p>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        {/* Podium Top 3 */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          {sorted.slice(0, 3).map((entry, podiumIdx) => {
-            const podiumOrder = [1, 0, 2]; // 2nd, 1st, 3rd visually
-            const actual = sorted[podiumOrder[podiumIdx]];
-            const isFirst = podiumOrder[podiumIdx] === 0;
-            return (
-              <div
-                key={actual.user.id}
-                className={`flex flex-col items-center p-4 rounded-2xl border text-center ${
-                  isFirst
-                    ? 'bg-amber-500/5 border-amber-500/30 shadow-lg shadow-amber-500/10'
-                    : 'bg-[#0d1117] border-[#21262d]'
-                }`}
-              >
-                <div className="text-2xl mb-2">
-                  {podiumOrder[podiumIdx] === 0 ? '🥇' : podiumOrder[podiumIdx] === 1 ? '🥈' : '🥉'}
+        {/* Podium for top 3 */}
+        {results.length >= 3 && (
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            {[results[1], results[0], results[2]].map((entry, pos) => {
+              const medals = ['🥈', '🥇', '🥉'];
+              const heights = ['h-24', 'h-32', 'h-20'];
+              const colors = ['from-slate-400/20 to-slate-500/10 border-slate-400/30',
+                              'from-amber-400/20 to-amber-500/10 border-amber-400/30',
+                              'from-amber-700/20 to-amber-800/10 border-amber-700/30'];
+              return (
+                <div key={entry.userId}
+                  className={`bg-gradient-to-b ${colors[pos]} border rounded-2xl p-4 text-center flex flex-col items-center justify-end ${heights[pos]}`}>
+                  <div className="text-2xl mb-1">{medals[pos]}</div>
+                  <p className="text-xs font-bold text-white truncate w-full">{entry.name}</p>
+                  <p className="text-sm font-black font-mono text-white mt-0.5">{entry.average}</p>
                 </div>
-                <div className={`w-10 h-10 rounded-full bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center text-black font-black text-sm mb-2 ${isFirst ? 'w-12 h-12 text-base' : ''}`}>
-                  {actual.user.name[0]}
-                </div>
-                <p className="font-semibold text-xs text-white">{actual.user.name}</p>
-                <p className="font-mono font-black text-lg text-white mt-1">{formatTime(actual.average)}</p>
-                <p className="text-[10px] text-[#8b949e]">avg · best {formatTime(actual.best)}</p>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
-        {/* Full Results Table */}
+        {/* Event tabs */}
+        {events.length > 1 && (
+          <div className="flex gap-2 flex-wrap mb-4">
+            {events.map((e: any) => {
+              const ev = e.eventId ?? e;
+              return (
+                <button key={ev} onClick={() => setSelectedEvent(ev)}
+                  className={`px-3 py-1 rounded-lg text-xs font-mono transition-colors ${
+                    selectedEvent === ev
+                      ? 'bg-[#00dbe7]/20 border border-[#00dbe7]/50 text-[#00dbe7]'
+                      : 'bg-[#161b22] border border-[#30363d] text-[#8b949e] hover:text-white'
+                  }`}>
+                  {ev}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Results table */}
         <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-[#21262d]">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d]">
             <Trophy size={14} className="text-amber-400" />
-            <h2 className="font-semibold text-sm text-white">Final Standings</h2>
+            <h2 className="font-semibold text-sm text-white">
+              {selectedEvent} Results
+            </h2>
+            <span className="ml-auto text-[10px] text-[#8b949e] font-mono">{results.length} competitors</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] border-b border-[#21262d]">
-                  <th className="text-left px-5 py-2.5">#</th>
-                  <th className="text-left px-3 py-2.5">Athlete</th>
-                  <th className="text-right px-3 py-2.5">Average</th>
-                  <th className="text-right px-3 py-2.5">Best</th>
-                  <th className="text-right px-3 py-2.5 hidden sm:table-cell">S1</th>
-                  <th className="text-right px-3 py-2.5 hidden sm:table-cell">S2</th>
-                  <th className="text-right px-3 py-2.5 hidden sm:table-cell">S3</th>
-                  <th className="text-right px-3 py-2.5 hidden sm:table-cell">S4</th>
-                  <th className="text-right px-5 py-2.5 hidden sm:table-cell">S5</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#21262d]">
-                {sorted.map(entry => (
-                  <tr key={entry.user.id} className="hover:bg-[#161b22] transition-colors">
-                    <td className={`px-5 py-3 font-black text-sm font-mono ${
-                      entry.rank === 1 ? 'text-amber-400' :
-                      entry.rank === 2 ? 'text-slate-300' :
-                      entry.rank === 3 ? 'text-amber-600' : 'text-[#8b949e]'
-                    }`}>
-                      {entry.rank}
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#00dbe7] to-[#a3fa00] flex items-center justify-center text-black font-bold text-[10px]">
-                          {entry.user.name[0]}
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-white">{entry.user.name}</p>
-                          {entry.user.wcaId && <p className="text-[10px] text-[#8b949e] font-mono">{entry.user.wcaId}</p>}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 text-right font-mono font-bold text-sm text-white">
-                      {formatTime(entry.average)}
-                    </td>
-                    <td className="px-3 py-3 text-right font-mono text-xs text-[#00dbe7]">
-                      {formatTime(entry.best)}
-                    </td>
-                    {entry.solves.map((s, i) => (
-                      <td key={i} className="px-3 py-3 text-right font-mono text-xs text-[#8b949e] hidden sm:table-cell">
-                        {s === null ? 'DNF' : `${(s / 1000).toFixed(3)}`}
-                      </td>
-                    ))}
+
+          {results.length === 0 ? (
+            <div className="py-12 text-center text-[#8b949e] text-sm">
+              No results yet for this event.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-[#21262d] text-[#8b949e]">
+                    <th className="px-4 py-2 text-left font-medium">#</th>
+                    <th className="px-4 py-2 text-left font-medium">Name</th>
+                    <th className="px-4 py-2 text-left font-medium hidden sm:table-cell">WCA ID</th>
+                    <th className="px-4 py-2 text-right font-medium">ao5</th>
+                    <th className="px-4 py-2 text-right font-medium">Best</th>
+                    <th className="px-4 py-2 text-right font-medium hidden md:table-cell">Solves</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#21262d]">
+                  {results.map(entry => (
+                    <tr key={entry.userId}
+                      className="hover:bg-[#161b22] transition-colors">
+                      <td className="px-4 py-3 font-mono font-black">
+                        {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : entry.rank}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link href={`/profile/${entry.userId}`}
+                          className="font-semibold text-white hover:text-[#00dbe7] transition-colors">
+                          {entry.name}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-[#8b949e] hidden sm:table-cell font-mono">
+                        {entry.wcaId && entry.wcaId !== 'NA' ? (
+                          <a href={`https://www.worldcubeassociation.org/persons/${entry.wcaId}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="text-[#00dbe7] hover:underline">
+                            {entry.wcaId}
+                          </a>
+                        ) : '—'}
+                      </td>
+                      <td className={`px-4 py-3 text-right font-mono font-bold ${
+                        entry.average === 'DNF' ? 'text-red-400' : 'text-white'
+                      }`}>
+                        {entry.average}
+                      </td>
+                      <td className="px-4 py-3 text-right font-mono text-[#8b949e]">
+                        {entry.best}
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <div className="flex gap-1 justify-end">
+                          {(entry.solves ?? []).map((s: string, i: number) => (
+                            <span key={i}
+                              className={`font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#0b0e11] ${
+                                s === 'DNF' ? 'text-red-400' : 'text-[#8b949e]'
+                              }`}>
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
+
       </div>
     </div>
   );

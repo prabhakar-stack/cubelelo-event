@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Dumbbell, Calendar, History, ChevronRight, Zap } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Dumbbell, Calendar, History, ChevronRight, Zap, RefreshCw, Trophy, Clock } from 'lucide-react';
 import { generateScramble } from '@/lib/cube';
 
 const TimerDisplay = dynamic(() => import('@/components/TimerDisplay'), { ssr: false });
@@ -11,157 +12,237 @@ const ScrambleVisualizer = dynamic(() => import('@/components/ScrambleVisualizer
 
 const PUZZLE_TYPES = ['3x3x3', '2x2x2', '4x4x4', 'OH', 'Pyraminx', 'Megaminx'];
 
-const QUICK_LINKS = [
-  {
-    href: '/practice/daily',
-    icon: Calendar,
-    color: 'text-amber-400',
-    bg: 'bg-amber-400/10 border-amber-400/20',
-    title: 'Daily Challenge',
-    desc: "Today's fixed scramble. See how you rank."
-  },
-  {
-    href: '/practice/history',
-    icon: History,
-    color: 'text-[#a3fa00]',
-    bg: 'bg-[#a3fa00]/10 border-[#a3fa00]/20',
-    title: 'My History',
-    desc: 'Progress charts, heatmap, and all-time stats.'
-  },
-];
+function formatMs(ms: number): string {
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  const msStr = (ms % 1000).toString().padStart(3, '0');
+  return m > 0 ? `${m}:${s.toString().padStart(2, '0')}.${msStr}` : `${s}.${msStr}`;
+}
 
-export default function FreePractice() {
+interface SolveRecord { timeInMs: number; puzzleType: string; sessionName?: string; status?: string; createdAt?: string; }
+
+function computeAo5(solves: number[]): number | null {
+  if (solves.length < 5) return null;
+  const last5 = solves.slice(-5);
+  const sorted = [...last5].sort((a, b) => a - b);
+  const trimmed = sorted.slice(1, 4);
+  return Math.round(trimmed.reduce((a, b) => a + b, 0) / trimmed.length);
+}
+
+export default function PracticePage() {
+  const { data: session } = useSession();
   const [puzzleType, setPuzzleType] = useState('3x3x3');
   const [scramble, setScramble] = useState(() => generateScramble('3x3x3'));
-  const [solves, setSolves] = useState<{ time: number; scramble: string }[]>([]);
+  const [localSolves, setLocalSolves] = useState<{ time: number; scramble: string }[]>([]);
+  const [dbSolves, setDbSolves] = useState<SolveRecord[]>([]);
+  const [dbLoading, setDbLoading] = useState(false);
+  const [timerBlurred, setTimerBlurred] = useState(false);
 
-  const newScramble = () => setScramble(generateScramble(puzzleType));
+  const newScramble = useCallback(() => setScramble(generateScramble(puzzleType)), [puzzleType]);
 
-  const handleSolveComplete = (ms: number) => {
-    setSolves(prev => [{ time: ms, scramble }, ...prev]);
+  const handleSolveComplete = useCallback((ms: number) => {
+    setLocalSolves(prev => [{ time: ms, scramble }, ...prev]);
     newScramble();
-  };
+  }, [scramble, newScramble]);
 
-  function fmt(ms: number) {
-    const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    const rem = s % 60;
-    const mil = ms % 1000;
-    if (m > 0) return `${m}:${rem.toString().padStart(2, '0')}.${mil.toString().padStart(3, '0')}`;
-    return `${s}.${mil.toString().padStart(3, '0')}`;
+  const handleStatusChange = useCallback((s: string) => {
+    setTimerBlurred(['holding', 'ready', 'running'].includes(s));
+  }, []);
+
+  const fetchDbSolves = useCallback(async () => {
+    if (!session?.user?.id) return;
+    setDbLoading(true);
+    try {
+      const r = await fetch('/api/solves?limit=500');
+      const d = await r.json();
+      setDbSolves(d.solves ?? []);
+    } catch {}
+    finally { setDbLoading(false); }
+  }, [session?.user?.id]);
+
+  useEffect(() => { fetchDbSolves(); }, [fetchDbSolves]);
+  useEffect(() => { setScramble(generateScramble(puzzleType)); }, [puzzleType]);
+
+  // Stats computed from DB solves
+  const pbByEvent: Record<string, { best: number; ao5: number | null; count: number; totalMs: number }> = {};
+  for (const ev of PUZZLE_TYPES) {
+    const evSolves = dbSolves.filter(s => s.puzzleType === ev && s.status !== 'DNF').map(s => s.timeInMs);
+    if (!evSolves.length) continue;
+    pbByEvent[ev] = {
+      best: Math.min(...evSolves),
+      ao5: computeAo5([...evSolves].reverse()),
+      count: evSolves.length,
+      totalMs: evSolves.reduce((a, b) => a + b, 0),
+    };
   }
 
-  const best = solves.length ? Math.min(...solves.map(s => s.time)) : null;
-  const mean = solves.length ? Math.round(solves.reduce((a, s) => a + s.time, 0) / solves.length) : null;
+  const totalSolves = dbSolves.length;
+  const totalPracticeMs = dbSolves.filter(s => s.status !== 'DNF').reduce((a, s) => a + s.timeInMs, 0);
+  const practiceHours = Math.floor(totalPracticeMs / 3600000);
+  const practiceMinutes = Math.floor((totalPracticeMs % 3600000) / 60000);
+
+  // Group by session
+  const sessionMap: Record<string, SolveRecord[]> = {};
+  for (const s of dbSolves) {
+    const key = s.sessionName ?? 'Default';
+    if (!sessionMap[key]) sessionMap[key] = [];
+    sessionMap[key].push(s);
+  }
+  const sessionList = Object.entries(sessionMap)
+    .map(([name, solves]) => ({ name, count: solves.length, best: Math.min(...solves.filter(s => s.status !== 'DNF').map(s => s.timeInMs).filter(Boolean)) || 0 }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  // Local session quick stats
+  const localBest = localSolves.length ? Math.min(...localSolves.map(s => s.time)) : null;
+  const localMean = localSolves.length ? Math.round(localSolves.reduce((a, s) => a + s.time, 0) / localSolves.length) : null;
 
   return (
     <div className="min-h-screen bg-[#0b0e11] text-white">
-      {/* Header */}
-      <div className="bg-[#0d1117] border-b border-[#21262d] px-4 sm:px-6 py-4">
+      <div className="bg-[#0d1117] border-b border-[#21262d] px-4 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
             <Dumbbell size={18} className="text-[#a3fa00]" />
-            <h1 className="text-xl font-black text-white">Practice Mode</h1>
+            <h1 className="text-xl font-black text-white">Practice Hub</h1>
           </div>
           <div className="flex gap-2">
-            {QUICK_LINKS.map(({ href, icon: Icon, color, title }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all hover:opacity-80 ${color} bg-[#161b22] border-[#30363d]`}
-              >
-                <Icon size={13} className={color} />
-                {title}
-              </Link>
-            ))}
+            <Link href="/daily-challenge" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-orange-500/30 text-xs font-medium text-orange-400 hover:bg-orange-500/10 transition-all">
+              <Calendar size={13} /> Daily Challenge
+            </Link>
+            <Link href="/timer" className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#30363d] text-xs font-medium text-[#8b949e] hover:text-white transition-all">
+              <Clock size={13} /> Full Timer
+            </Link>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left: Quick links */}
-          <div className="space-y-3">
-            {QUICK_LINKS.map(({ href, icon: Icon, color, bg, title, desc }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-start gap-3 p-4 bg-[#0d1117] border border-[#21262d] hover:border-[#30363d] rounded-2xl group transition-all hover:-translate-y-0.5"
-              >
-                <div className={`w-9 h-9 rounded-xl border ${bg} flex items-center justify-center flex-shrink-0`}>
-                  <Icon size={16} className={color} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-white">{title}</p>
-                  <p className="text-xs text-[#8b949e] mt-0.5">{desc}</p>
-                </div>
-                <ChevronRight size={14} className="text-[#8b949e] group-hover:text-white mt-1 transition-colors" />
-              </Link>
-            ))}
 
-            {/* Session stats */}
-            {solves.length > 0 && (
-              <div className="p-4 bg-[#0d1117] border border-[#21262d] rounded-2xl">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-3">This Session</p>
+          {/* Sidebar: stats */}
+          <div className="space-y-4">
+
+            {/* Overall stats */}
+            {session?.user?.id && (
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e]">All-Time Stats</p>
+                  <button onClick={fetchDbSolves} className="text-[#8b949e] hover:text-white transition-colors">
+                    <RefreshCw size={12} className={dbLoading ? 'animate-spin' : ''} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center py-2 bg-[#161b22] rounded-xl">
+                    <p className="text-[10px] text-[#8b949e]">Total Solves</p>
+                    <p className="font-mono font-bold text-lg text-white">{totalSolves}</p>
+                  </div>
+                  <div className="text-center py-2 bg-[#161b22] rounded-xl">
+                    <p className="text-[10px] text-[#8b949e]">Practice Time</p>
+                    <p className="font-mono font-bold text-sm text-white">
+                      {practiceHours}h {practiceMinutes}m
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PBs per event */}
+            {session?.user?.id && Object.keys(pbByEvent).length > 0 && (
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-3">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] flex items-center gap-1.5">
+                  <Trophy size={10} className="text-amber-400" /> Personal Bests
+                </p>
+                {Object.entries(pbByEvent).map(([ev, stats]) => (
+                  <div key={ev} className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-semibold text-white">{ev}</span>
+                      <span className="text-[10px] text-[#8b949e] ml-2">{stats.count} solves</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-xs text-amber-400 font-bold">{formatMs(stats.best)}</p>
+                      {stats.ao5 && <p className="font-mono text-[10px] text-[#8b949e]">ao5 {formatMs(stats.ao5)}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Sessions */}
+            {sessionList.length > 0 && (
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-2">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e]">Recent Sessions</p>
+                {sessionList.map(s => (
+                  <div key={s.name} className="flex items-center justify-between py-1">
+                    <div>
+                      <p className="text-xs text-white font-medium truncate max-w-[130px]">{s.name}</p>
+                      <p className="text-[10px] text-[#8b949e]">{s.count} solves</p>
+                    </div>
+                    <span className="font-mono text-xs text-[#00dbe7]">{s.best ? formatMs(s.best) : '—'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Local session quick stats */}
+            {localSolves.length > 0 && (
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 space-y-2">
+                <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e]">This Session</p>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: 'Solves', value: solves.length.toString() },
-                    { label: 'Best', value: best ? fmt(best) : '—' },
-                    { label: 'Mean', value: mean ? fmt(mean) : '—' },
-                    { label: 'Last', value: fmt(solves[0].time) },
+                    { label: 'Solves', value: String(localSolves.length) },
+                    { label: 'Best', value: localBest ? formatMs(localBest) : '—' },
+                    { label: 'Mean', value: localMean ? formatMs(localMean) : '—' },
+                    { label: 'Last', value: formatMs(localSolves[0].time) },
                   ].map(({ label, value }) => (
                     <div key={label} className="text-center py-2 bg-[#161b22] rounded-xl">
-                      <p className="text-[10px] text-[#8b949e] mb-0.5">{label}</p>
+                      <p className="text-[10px] text-[#8b949e]">{label}</p>
                       <p className="font-mono font-bold text-sm text-white">{value}</p>
                     </div>
                   ))}
                 </div>
               </div>
             )}
+
+            {!session?.user?.id && (
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4 text-center space-y-2">
+                <p className="text-xs text-[#8b949e]">Sign in to save your solves and track progress over time.</p>
+                <Link href="/login" className="inline-block px-4 py-1.5 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-xs font-medium hover:bg-[#00dbe7]/20 transition-all">Sign in</Link>
+              </div>
+            )}
           </div>
 
-          {/* Right: Timer */}
+          {/* Main: timer */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Puzzle selector */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 items-center">
               {PUZZLE_TYPES.map(p => (
-                <button
-                  key={p}
-                  onClick={() => { setPuzzleType(p); setScramble(generateScramble(p)); }}
+                <button key={p} onClick={() => setPuzzleType(p)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold font-mono transition-all ${
-                    puzzleType === p
-                      ? 'bg-[#a3fa00] text-black'
-                      : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white'
-                  }`}
-                >
-                  {p}
-                </button>
+                    puzzleType === p ? 'bg-[#a3fa00] text-black' : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white'
+                  }`}>{p}</button>
               ))}
-              <button onClick={newScramble} className="ml-auto px-3 py-1.5 rounded-xl text-xs text-[#8b949e] border border-[#30363d] hover:text-white transition-all flex items-center gap-1">
-                <Zap size={11} /> New
+              <button onClick={newScramble} className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs text-[#8b949e] border border-[#30363d] hover:text-white transition-all">
+                <Zap size={11} /> New Scramble
               </button>
             </div>
 
-            {/* Scramble */}
             <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-4">
               <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1.5">Scramble</p>
-              <p className="font-mono text-sm text-white leading-relaxed">{scramble}</p>
+              <p className="font-mono text-sm text-white leading-relaxed break-all">{scramble}</p>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className={`grid sm:grid-cols-2 gap-4 transition-all duration-300 ${timerBlurred ? 'opacity-20 blur-sm pointer-events-none' : ''}`}>
               <ScrambleVisualizer puzzleType={puzzleType} scramble={scramble} />
-              <TimerDisplay onSolveComplete={handleSolveComplete} />
             </div>
+            <TimerDisplay onSolveComplete={handleSolveComplete} onStatusChange={handleStatusChange} />
 
-            {/* Recent solves */}
-            {solves.length > 0 && (
+            {localSolves.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-xs text-[#8b949e] font-mono uppercase tracking-widest">Recent</p>
-                {solves.slice(0, 5).map((s, i) => (
+                <p className="text-xs text-[#8b949e] font-mono uppercase tracking-widest">Recent Solves</p>
+                {localSolves.slice(0, 8).map((s, i) => (
                   <div key={i} className="flex items-center gap-3 px-3 py-2 bg-[#0d1117] border border-[#21262d] rounded-xl">
                     <span className="text-[10px] text-[#8b949e] font-mono w-4">{i + 1}</span>
-                    <span className="font-mono text-sm font-bold text-white">{fmt(s.time)}</span>
-                    <span className="text-[10px] text-[#8b949e] truncate flex-1">{s.scramble.substring(0, 30)}...</span>
+                    <span className="font-mono text-sm font-bold text-white">{formatMs(s.time)}</span>
+                    <span className="text-[10px] text-[#8b949e] truncate flex-1">{s.scramble.substring(0, 30)}…</span>
                   </div>
                 ))}
               </div>

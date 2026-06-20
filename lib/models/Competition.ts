@@ -1,140 +1,161 @@
+/**
+ * Competition model — matches the real MongoDB schema exactly.
+ *
+ * Real DB field names preserved 1-to-1.
+ * Use toApiShape() in API routes to convert to the frontend-friendly format.
+ */
+
 import mongoose, { Document, Schema } from 'mongoose';
-
-export type CompetitionStatus =
-  | 'DRAFT'
-  | 'REGISTRATION_OPEN'
-  | 'REGISTRATION_CLOSED'
-  | 'LIVE'
-  | 'COMPLETED'
-  | 'CANCELLED';
-
-export type PaymentStatus = 'PENDING' | 'PAID' | 'WAIVED' | 'REFUNDED';
 
 // ─── Sub-schemas ──────────────────────────────────────────────────────────────
 
-const ScrambleSetSchema = new Schema(
+const ScrambleSchema = new Schema(
   {
-    round: { type: Number, required: true },
-    event: { type: String, required: true },  // puzzleType
-    scrambles: [{ type: String }],            // array of 5 scrambles
-    lockedAt: { type: Date },
-    lockedBy: { type: String },               // admin user id
+    defaultScramble: { type: Boolean, default: true },
+    scramblePattern: [{ type: String }],
+  },
+  { _id: false }
+);
+
+const EventSchema = new Schema(
+  {
+    eventId: { type: String },        // "222", "333", "444" etc.
+    eventName: { type: String },      // "2x2x2 Cube", "3x3x3 Cube" etc.
+    scramble: { type: ScrambleSchema },
+    start: { type: String },          // "1400" (24h time string)
+    end: { type: String },            // "1430"
+    resultVerified: { type: String, default: 'false' },
+    competitorsIds: [{ type: String }],
   },
   { _id: true }
 );
 
-const EntrySchema = new Schema(
-  {
-    userId: { type: String, required: true },
-    userName: { type: String },
-    paymentStatus: { type: String, enum: ['PENDING', 'PAID', 'WAIVED', 'REFUNDED'], default: 'PENDING' },
-    paymentRef: { type: String },   // Razorpay payment ID
-    registeredAt: { type: Date, default: Date.now },
-    events: [{ type: String }],     // which events user entered
-  },
-  { _id: true }
-);
-
-// ─── Round result per competitor per solve ─────────────────────────────────────
-const SolveResultSchema = new Schema(
-  {
-    userId: { type: String, required: true },
-    round: { type: Number, required: true },
-    event: { type: String, required: true },
-    attemptNumber: { type: Number, required: true },   // 1-5
-    timeInMs: { type: Number },                        // null = DNF
-    scramble: { type: String },
-    status: { type: String, enum: ['OK', '+2', 'DNF'], default: 'OK' },
-    videoUrl: { type: String },
-    flagged: { type: Boolean, default: false },
-    flagReason: { type: String },
-    verifiedBy: { type: String },
-    submittedAt: { type: Date, default: Date.now },
-  },
-  { _id: true }
-);
-
-// ─── Main Competition schema ─────────────────────────────────────────────────
+// ─── Main schema ──────────────────────────────────────────────────────────────
 
 export interface ICompetition extends Document {
-  name: string;
-  slug: string;
+  competitionId: string;
+  competitionType: string;
+  competitionProfile: string;   // S3 banner image URL
+  anotherImage?: string;
+  competitionName: string;
+  shortName?: string;
+  registrationOpen: boolean;
+  status: 'upcoming' | 'live' | 'past';
+  featured: boolean;
+  start: string;                // "YYYY-MM-DD"
+  end: string;
   description?: string;
-  events: string[];           // ['3x3x3', '2x2x2', ...]
-  startDate: Date;
-  endDate: Date;
-  registrationDeadline?: Date;
-  baseFee: number;            // paise
-  perEventFee: number;        // paise
-  isFree: boolean;
-  maxEntries: number;
-  status: CompetitionStatus;
-  rounds: number;
-  currentRound: number;
-  prize?: string;
-  rulesMarkdown?: string;
-  bannerUrl?: string;
-  createdBy: string;          // admin user id
-
-  // Embedded arrays
-  scrambleSets: mongoose.Types.DocumentArray<any>;
-  entries: mongoose.Types.DocumentArray<any>;
-  solveResults: mongoose.Types.DocumentArray<any>;
-
+  verified: string;             // "true" | "false" stored as string in legacy data
+  rules?: string;               // JSON string: [{heading, body}]
+  faqs?: string;                // JSON string: [{heading, body}]
+  createdByAdminId?: string;
+  events: mongoose.Types.DocumentArray<any>;
+  competitorsIds: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
 const CompetitionSchema = new Schema<ICompetition>(
   {
-    name: { type: String, required: true },
-    slug: { type: String, unique: true },
-    description: { type: String },
-    events: [{ type: String }],
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
-    registrationDeadline: { type: Date },
-    baseFee: { type: Number, default: 0 },
-    perEventFee: { type: Number, default: 0 },
-    isFree: { type: Boolean, default: false },
-    maxEntries: { type: Number, default: 100 },
+    competitionId: { type: String },
+    competitionType: { type: String },
+    competitionProfile: { type: String },
+    anotherImage: { type: String },
+    competitionName: { type: String, required: true },
+    shortName: { type: String },
+    registrationOpen: { type: Boolean, default: false },
     status: {
       type: String,
-      enum: ['DRAFT', 'REGISTRATION_OPEN', 'REGISTRATION_CLOSED', 'LIVE', 'COMPLETED', 'CANCELLED'],
-      default: 'DRAFT',
+      enum: ['upcoming', 'live', 'past'],
+      default: 'upcoming',
     },
-    rounds: { type: Number, default: 1 },
-    currentRound: { type: Number, default: 1 },
-    prize: { type: String },
-    rulesMarkdown: { type: String },
-    bannerUrl: { type: String },
-    createdBy: { type: String },
-
-    scrambleSets: [ScrambleSetSchema],
-    entries: [EntrySchema],
-    solveResults: [SolveResultSchema],
+    featured: { type: Boolean, default: false },
+    start: { type: String },
+    end: { type: String },
+    description: { type: String },
+    verified: { type: String, default: 'false' },
+    rules: { type: String },
+    faqs: { type: String },
+    createdByAdminId: { type: String },
+    events: [EventSchema],
+    competitorsIds: [{ type: String }],
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    collection: 'competitions',
+  }
 );
 
-// Auto-generate slug from name
-CompetitionSchema.pre('save', function (next) {
-  if (this.isNew && !this.slug) {
-    this.slug =
-      this.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '') +
-      '-' +
-      Date.now();
-  }
-  next();
-});
+CompetitionSchema.index({ status: 1, start: -1 });
+CompetitionSchema.index({ competitionId: 1 }, { unique: true, sparse: true });
+CompetitionSchema.index({ featured: 1 });
 
-// Virtual: entries count
-CompetitionSchema.virtual('entryCount').get(function () {
-  return this.entries?.length ?? 0;
-});
+// ─── Status helpers ────────────────────────────────────────────────────────────
+
+/** eventId codes ("222") → UI type strings ("2x2x2") */
+const EVENT_ID_TO_TYPE: Record<string, string> = {
+  '222': '2x2x2',  '333': '3x3x3',   '444': '4x4x4',
+  '555': '5x5x5',  '666': '6x6x6',   '777': '7x7x7',
+  '333oh': 'OH',   '333bf': 'BLD',   'pyram': 'Pyraminx',
+  'skewb': 'Skewb','minx': 'Megaminx','sq1': 'Square-1',
+  'clock': 'Clock','333mbf': 'Multi-BLD',
+};
+
+export function mapEventId(id: string): string {
+  return EVENT_ID_TO_TYPE[id] ?? id;
+}
+
+/** DB status + registrationOpen → uppercase UI status string */
+export function mapDbStatus(status: string, registrationOpen: boolean): string {
+  if (status === 'live') return 'LIVE';
+  if (status === 'past') return 'COMPLETED';
+  return registrationOpen ? 'REGISTRATION_OPEN' : 'REGISTRATION_CLOSED';
+}
+
+/**
+ * Converts a lean() competition doc to the shape the frontend expects.
+ * Call this in every API route before returning JSON.
+ */
+export function toApiShape(doc: any) {
+  if (!doc) return null;
+  const eventTypes = (doc.events ?? []).map((e: any) => mapEventId(e.eventId));
+  return {
+    _id: doc._id?.toString(),
+    competitionId: doc.competitionId,
+    name: doc.competitionName,
+    shortName: doc.shortName,
+    description: doc.description,
+    bannerUrl: doc.competitionProfile,
+    competitionType: doc.competitionType,
+    featured: doc.featured ?? false,
+    startDate: doc.start,
+    endDate: doc.end,
+    events: eventTypes,
+    eventDetails: (doc.events ?? []).map((e: any) => ({
+      eventId: e.eventId,
+      eventName: e.eventName,
+      type: mapEventId(e.eventId),
+      start: e.start,
+      end: e.end,
+      resultVerified: e.resultVerified,
+      competitorsIds: e.competitorsIds ?? [],
+    })),
+    registrationOpen: doc.registrationOpen,
+    status: mapDbStatus(doc.status, doc.registrationOpen),
+    isFree: true,
+    baseFee: 0,
+    perEventFee: 0,
+    maxEntries: 999,
+    currentEntries: (doc.competitorsIds ?? []).length,
+    entries: doc.competitorsIds ?? [],
+    rules: (() => { try { return JSON.parse(doc.rules ?? '[]'); } catch { return []; } })(),
+    faqs:  (() => { try { return JSON.parse(doc.faqs  ?? '[]'); } catch { return []; } })(),
+    rounds: 1,
+    currentRound: 1,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt,
+  };
+}
 
 export const Competition =
   mongoose.models.Competition ??

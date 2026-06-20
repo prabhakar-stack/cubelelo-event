@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Shield, Plus, Trash2, Users, CheckCircle, RefreshCw,
-  ExternalLink, Database, Zap, Lock, Unlock
+  ExternalLink, Database, Zap, Lock, Unlock, Loader2
 } from 'lucide-react';
 import { useSession, signIn } from 'next-auth/react';
 import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
-import { getPuzzleEmoji, getStatusLabel, getStatusColor, Competition } from '@/app/compete/page';
+import { getPuzzleEmoji, getStatusLabel, getStatusColor, Competition } from '@/lib/utils/competition';
 
 type CompetitionStatus = Competition['status'];
 
@@ -23,6 +23,7 @@ interface NewCompForm {
   baseFee: string;
   perEventFee: string;
   isFree: boolean;
+  isPractice: boolean;
   maxEntries: string;
   rounds: string;
   prize: string;
@@ -33,7 +34,7 @@ const emptyForm: NewCompForm = {
   name: '', events: ['3x3x3'],
   startDate: '', endDate: '', registrationDeadline: '',
   baseFee: '399', perEventFee: '99',
-  isFree: false, maxEntries: '64', rounds: '3', prize: '', description: '',
+  isFree: false, isPractice: false, maxEntries: '64', rounds: '3', prize: '', description: '',
 };
 
 // ─── Status transition map ────────────────────────────────────────────────────
@@ -59,7 +60,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<'competitions' | 'tools'>('competitions');
 
   // ── Auth guard ────────────────────────────────────────────────────────────
-  const isAdmin = session?.user?.role === 'ADMIN';
+  const isAdmin = session?.user?.role === 'admin';
 
   // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchCompetitions = useCallback(async () => {
@@ -119,6 +120,7 @@ export default function AdminPanel() {
           baseFee: form.isFree ? 0 : parseInt(form.baseFee) * 100,   // convert to paise
           perEventFee: form.isFree ? 0 : parseInt(form.perEventFee) * 100,
           isFree: form.isFree,
+          competitionType: form.isPractice ? 'PRACTICE' : 'STANDARD',
           maxEntries: parseInt(form.maxEntries) || 64,
           rounds: parseInt(form.rounds) || 1,
           prize: form.prize,
@@ -303,169 +305,146 @@ export default function AdminPanel() {
                       >
                         <ExternalLink size={11} /> View
                       </Link>
-                      {comp.status !== 'COMPLETED' && comp.status !== 'CANCELLED' && (
-                        <button
-                          onClick={() => cancelComp(comp._id)}
-                          className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-red-400/60 hover:text-red-400 border border-red-500/20 transition-all"
-                        >
-                          <Trash2 size={11} /> Cancel
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
               );
             })}
-          </div>
-        )}
-
-        {/* ── Dev Tools Tab ── */}
-        {activeTab === 'tools' && (
-          <div className="space-y-4 max-w-xl">
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Database size={16} className="text-[#00dbe7]" />
-                <h3 className="font-semibold text-sm text-white">Seed Sample Competitions</h3>
-              </div>
-              <p className="text-xs text-[#8b949e] mb-4">
-                Inserts 4 sample competitions (1 Live, 2 Open, 1 Completed) into MongoDB.
-                Skips if competitions already exist.
-              </p>
-              <button
-                onClick={handleSeed}
-                disabled={seedLoading}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-sm font-bold hover:bg-[#00dbe7]/20 transition-all disabled:opacity-50"
-              >
-                {seedLoading ? <RefreshCw size={14} className="animate-spin" /> : <Plus size={14} />}
-                Seed Competitions
-              </button>
-              {seedMsg && (
-                <p className="mt-3 text-xs font-mono text-emerald-400">{seedMsg}</p>
-              )}
             </div>
+          )}
 
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Shield size={16} className="text-amber-400" />
-                <h3 className="font-semibold text-sm text-white">Current Session</h3>
+          {/* ── Dev Tools Tab ── */}
+          {activeTab === 'tools' && (
+            <div className="space-y-4 max-w-lg">
+              <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Database size={16} className="text-[#00dbe7]" />
+                  <h3 className="font-semibold text-sm text-white">Seed Sample Data</h3>
+                </div>
+                <p className="text-xs text-[#8b949e] mb-4">
+                  Inserts 3 sample competitions (live, open, past) into MongoDB for development testing.
+                  Safe to run multiple times — uses upsert by competitionId.
+                </p>
+                <button
+                  onClick={handleSeed}
+                  disabled={seedLoading}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] text-sm font-bold hover:bg-[#00dbe7]/20 transition-all disabled:opacity-50"
+                >
+                  {seedLoading ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} />}
+                  {seedLoading ? 'Seeding...' : 'Seed Competitions'}
+                </button>
+                {seedMsg && (
+                  <p className="mt-3 text-xs font-mono text-emerald-400 bg-emerald-400/5 border border-emerald-400/20 rounded-lg px-3 py-2">
+                    {seedMsg}
+                  </p>
+                )}
               </div>
-              <pre className="text-[11px] font-mono text-[#8b949e] whitespace-pre-wrap break-all">
-                {JSON.stringify({ email: session.user?.email, role: session.user?.role, id: session.user?.id }, null, 2)}
-              </pre>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
       {/* Create Competition Modal */}
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Create Competition" size="lg">
-        <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div className="sm:col-span-2">
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Name *</label>
-              <input
-                value={form.name}
-                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. Midweek Madness #27"
-                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7]"
-              />
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="New Competition" size="lg">
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="text-xs text-[#8b949e] mb-1 block">Competition Name *</label>
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]"
+                placeholder="Midweek Madness #26" />
             </div>
-
-            {/* Events multi-select */}
-            <div className="sm:col-span-2">
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-2">Events</label>
-              <div className="flex flex-wrap gap-2">
-                {PUZZLE_TYPES.map(p => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setForm(f => ({
-                      ...f,
-                      events: f.events.includes(p) ? f.events.filter(e => e !== p) : [...f.events, p],
-                    }))}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all ${
-                      form.events.includes(p)
-                        ? 'bg-[#00dbe7] text-black font-bold'
-                        : 'bg-[#161b22] border border-[#30363d] text-[#8b949e] hover:text-white'
-                    }`}
-                  >
-                    {getPuzzleEmoji(p)} {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <div>
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Start *</label>
-              <input type="datetime-local" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
+              <label className="text-xs text-[#8b949e] mb-1 block">Start Date *</label>
+              <input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
                 className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
             </div>
             <div>
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">End</label>
-              <input type="datetime-local" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
+              <label className="text-xs text-[#8b949e] mb-1 block">End Date</label>
+              <input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
                 className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
-            </div>
-            <div>
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Registration Deadline</label>
-              <input type="datetime-local" value={form.registrationDeadline} onChange={e => setForm(f => ({ ...f, registrationDeadline: e.target.value }))}
-                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
-            </div>
-            <div>
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Rounds</label>
-              <input type="number" min="1" max="5" value={form.rounds} onChange={e => setForm(f => ({ ...f, rounds: e.target.value }))}
-                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
-            </div>
-
-            {/* Fee toggle */}
-            <div className="sm:col-span-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.isFree} onChange={e => setForm(f => ({ ...f, isFree: e.target.checked }))}
-                  className="w-4 h-4 accent-[#00dbe7]" />
-                <span className="text-sm text-white">Free competition (no payment required)</span>
-              </label>
-            </div>
-
-            {!form.isFree && (
-              <>
-                <div>
-                  <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Base Fee (₹)</label>
-                  <input type="number" min="0" value={form.baseFee} onChange={e => setForm(f => ({ ...f, baseFee: e.target.value }))}
-                    className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
-                </div>
-                <div>
-                  <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Per-Event Fee (₹)</label>
-                  <input type="number" min="0" value={form.perEventFee} onChange={e => setForm(f => ({ ...f, perEventFee: e.target.value }))}
-                    className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
-                </div>
-              </>
-            )}
-
-            <div>
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Max Entries</label>
-              <input type="number" min="2" value={form.maxEntries} onChange={e => setForm(f => ({ ...f, maxEntries: e.target.value }))}
-                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
-            </div>
-            <div>
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Prize Pool</label>
-              <input value={form.prize} onChange={e => setForm(f => ({ ...f, prize: e.target.value }))}
-                placeholder="₹5,000 + Trophy"
-                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7]" />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="text-xs text-[#8b949e] font-mono uppercase tracking-widest block mb-1">Description</label>
-              <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={2} placeholder="Competition details..."
-                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] resize-none" />
             </div>
           </div>
-
-          <button
-            onClick={handleCreate}
-            disabled={!form.name || !form.startDate || saving || form.events.length === 0}
-            className="w-full py-3 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] font-bold text-sm hover:bg-[#00dbe7]/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {saving ? 'Creating...' : 'Create as Draft'}
-          </button>
+          <div>
+            <label className="text-xs text-[#8b949e] mb-2 block">Events</label>
+            <div className="flex flex-wrap gap-2">
+              {PUZZLE_TYPES.map(p => (
+                <button key={p} type="button"
+                  onClick={() => setForm(f => ({
+                    ...f,
+                    events: f.events.includes(p) ? f.events.filter(e => e !== p) : [...f.events, p],
+                  }))}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all ${
+                    form.events.includes(p)
+                      ? 'bg-[#00dbe7]/20 text-[#00dbe7] border border-[#00dbe7]/40'
+                      : 'bg-[#161b22] text-[#8b949e] border border-[#30363d] hover:text-white'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.isFree}
+                onChange={e => setForm(f => ({ ...f, isFree: e.target.checked }))} />
+              <span className="text-sm text-white">Free competition</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.isPractice}
+                onChange={e => setForm(f => ({ ...f, isPractice: e.target.checked }))} />
+              <span className="text-sm text-white">Practice event (unlisted — direct link only)</span>
+            </label>
+          </div>
+          {!form.isFree && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[#8b949e] mb-1 block">Base Fee (Rs.)</label>
+                <input type="number" value={form.baseFee}
+                  onChange={e => setForm(f => ({ ...f, baseFee: e.target.value }))}
+                  className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
+              </div>
+              <div>
+                <label className="text-xs text-[#8b949e] mb-1 block">Per Event Fee (Rs.)</label>
+                <input type="number" value={form.perEventFee}
+                  onChange={e => setForm(f => ({ ...f, perEventFee: e.target.value }))}
+                  className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-[#8b949e] mb-1 block">Max Entries</label>
+              <input type="number" value={form.maxEntries}
+                onChange={e => setForm(f => ({ ...f, maxEntries: e.target.value }))}
+                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
+            </div>
+            <div>
+              <label className="text-xs text-[#8b949e] mb-1 block">Rounds</label>
+              <input type="number" value={form.rounds}
+                onChange={e => setForm(f => ({ ...f, rounds: e.target.value }))}
+                className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7]" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-[#8b949e] mb-1 block">Description</label>
+            <textarea value={form.description}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              rows={3}
+              className="w-full px-3 py-2 bg-[#161b22] border border-[#30363d] rounded-xl text-sm text-white focus:outline-none focus:border-[#00dbe7] resize-none"
+              placeholder="Competition description..." />
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-[#21262d]">
+            <button onClick={() => setShowCreate(false)}
+              className="px-4 py-2 rounded-xl text-sm text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-all">
+              Cancel
+            </button>
+            <button onClick={handleCreate} disabled={saving || !form.name}
+              className="flex items-center gap-2 px-4 py-2 bg-[#00dbe7] hover:bg-[#00c4d0] text-black font-bold text-sm rounded-xl transition-all disabled:opacity-60">
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+              {saving ? 'Creating...' : 'Create Competition'}
+            </button>
+          </div>
         </div>
       </Modal>
     </div>

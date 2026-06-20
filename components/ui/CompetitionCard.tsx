@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Calendar, Users, Trophy, ChevronRight, Clock } from 'lucide-react';
-import { getPuzzleEmoji, getStatusLabel, getStatusColor } from '@/app/compete/page';
+import { getPuzzleEmoji, getStatusLabel, getStatusColor } from '@/lib/utils/competition';
 
 // ─── Props shape — decoupled from DB schema ───────────────────────────────────
 

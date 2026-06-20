@@ -1,60 +1,63 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-export type UserRole = 'ATHLETE' | 'ADMIN' | 'DELEGATE';
-
 export interface IUser extends Document {
-  // NextAuth compat fields
-  name?: string;
-  email: string;
-  emailVerified?: Date;
-  image?: string;
-
-  // Cubelelo profile
-  clId: string;           // e.g. "CL0001"
-  displayName?: string;
-  wcaId?: string;         // e.g. "2014DESH01"
-  wcaVerified: boolean;
-  role: UserRole;
-  state?: string;
+  userId: string;
+  wcaId?: string | null;
+  name?: { firstName?: string; lastName?: string };
+  dob?: string;
+  gender?: string;
   city?: string;
-
-  // Stats (denormalised for fast reads)
-  totalSolves: number;
-  activeSince: Date;
-
+  mobile?: string;
+  email: string;
+  password?: string;
+  token?: string;
+  role: string;
+  country?: string;
+  active: boolean;
+  profilePicture?: string;
+  socialMedia?: Record<string, string>;
+  resetToken?: string;
+  resetTokenExpiry?: Date;
+  privacyPublic?: boolean;
+  wcaVerified?: boolean;
+  notifEmail?: boolean;
+  notifPush?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const UserSchema = new Schema<IUser>(
   {
-    name: { type: String },
-    email: { type: String, required: true, unique: true, lowercase: true },
-    emailVerified: { type: Date },
-    image: { type: String },
-
-    clId: { type: String, unique: true, sparse: true },
-    displayName: { type: String },
-    wcaId: { type: String, unique: true, sparse: true },
-    wcaVerified: { type: Boolean, default: false },
-    role: { type: String, enum: ['ATHLETE', 'ADMIN', 'DELEGATE'], default: 'ATHLETE' },
-    state: { type: String },
+    userId: { type: String, unique: true, sparse: true },
+    wcaId: { type: String, default: null },
+    name: {
+      firstName: { type: String },
+      lastName: { type: String },
+    },
+    dob: { type: String },
+    gender: { type: String },
     city: { type: String },
-
-    totalSolves: { type: Number, default: 0 },
-    activeSince: { type: Date, default: Date.now },
+    mobile: { type: String },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    password: { type: String, select: false },
+    token: { type: String, select: false },
+    role: { type: String, default: 'user' },
+    country: { type: String },
+    active: { type: Boolean, default: true },
+    profilePicture: { type: String },
+    socialMedia: { type: Schema.Types.Mixed },
+    resetToken: { type: String, select: false },
+    resetTokenExpiry: { type: Date, select: false },
+    privacyPublic: { type: Boolean, default: true },
+    wcaVerified: { type: Boolean, default: false },
+    notifEmail: { type: Boolean, default: true },
+    notifPush: { type: Boolean, default: true },
   },
-  { timestamps: true }
-);
-
-// Auto-assign CL ID before first save
-UserSchema.pre('save', async function (next) {
-  if (this.isNew && !this.clId) {
-    const count = await (this.constructor as Model<IUser>).countDocuments();
-    this.clId = `CL${String(count + 1).padStart(4, '0')}`;
+  {
+    timestamps: true,
+    collection: 'users',
   }
-  next();
-});
+);
 
 export const User: Model<IUser> =
   mongoose.models.User ?? mongoose.model<IUser>('User', UserSchema);

@@ -9,8 +9,7 @@ import {
   RefreshCw, FolderDot, Dribbble, BrainCircuit, Info, Cloud, CloudOff
 } from 'lucide-react';
 import {
-  generateScramble, getInitialCubeState3, getScrambled3x3, getScrambled2x2,
-  CubeState3x3, CubeState2x2, CUBE_COLORS
+  generateScramble, generateScrambleAsync, WCA_EVENT_MAP
 } from '@/lib/cube';
 
 const ScrambleVisualizer = dynamic(
@@ -30,6 +29,7 @@ interface Solve {
   scramble: string;
   timestamp: number;
   status: 'OK' | '+2' | 'DNF';
+  note?: string;
 }
 
 interface Session {
@@ -95,14 +95,22 @@ export default function TimerTerminal() {
   const [trainTimer, setTrainTimer] = useState<number>(0);
   const [trainSolves, setTrainSolves] = useState<number[]>([]);
   const [timerBlurred, setTimerBlurred] = useState<boolean>(false);
+  const [bldPhase, setBldPhase] = useState<'memo' | 'solve'>('memo');
+  const [bldMemoMs, setBldMemoMs] = useState<number>(0);
+  const [bldMemoRunning, setBldMemoRunning] = useState<boolean>(false);
+  const bldMemoStartRef = React.useRef<number>(0);
+  const bldMemoIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
+  const [targetTime, setTargetTime] = useState<string>('');
+  const [noteEditId, setNoteEditId] = useState<string | null>(null);
+  const [noteEditText, setNoteEditText] = useState<string>('');
 
   const startTimeRef = useRef<number>(0);
   const timerIntervalRef = useRef<any>(null);
   const trainIntervalRef = useRef<any>(null);
 
-  const triggerNewScramble = useCallback(() => {
-    const s = generateScramble(puzzleType);
-    setTimeout(() => { setScramble(s); }, 0);
+  const triggerNewScramble = useCallback(async () => {
+    const s = await generateScrambleAsync(puzzleType);
+    setScramble(s);
   }, [puzzleType]);
 
   // Load from localStorage
@@ -143,6 +151,7 @@ export default function TimerTerminal() {
   };
 
   useEffect(() => {
+    if (puzzleType === 'BLD') { setBldPhase('memo'); setBldMemoMs(0); }
     triggerNewScramble();
     localStorage.setItem('neo_cube_puzzle_type', puzzleType);
   }, [puzzleType, triggerNewScramble]);
@@ -208,7 +217,7 @@ export default function TimerTerminal() {
     return `${seconds}.${msStr}`;
   }
 
-  const handleSolveComplete = useCallback(async (timeMs: number) => {
+  const handleSolveComplete = useCallback(async (timeMs: number, penalty?: 'none' | '+2' | 'DNF') => {
     const newSolve: Solve = {
       id: `solve-${getNow()}-${Math.random().toString(36).substr(2, 5)}`,
       puzzle: puzzleType,
@@ -257,9 +266,70 @@ export default function TimerTerminal() {
     setTimerBlurred(status === 'holding' || status === 'ready' || status === 'running');
   }, []);
 
+  // Keyboard shortcuts: D=DNF, P=+2, Z=undo for last solve
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      // Don't fire when typing in input/textarea
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+      const key = e.key.toLowerCase();
+      if (key === 'z') {
+        // Undo last solve
+        setSolves(prev => {
+          const filtered = prev.filter(s => s.puzzle === puzzleType);
+          if (!filtered.length) return prev;
+          const lastId = filtered[0].id;
+          const updated = prev.filter(s => s.id !== lastId);
+          localStorage.setItem('neo_cube_solves', JSON.stringify(updated));
+          return updated;
+        });
+        return;
+      }
+      setSolves(prev => {
+        const filtered = prev.filter(s => s.puzzle === puzzleType);
+        if (!filtered.length) return prev;
+        const lastId = filtered[0].id;
+        let penalty: 'OK' | '+2' | 'DNF' | null = null;
+        if (key === 'd') penalty = 'DNF';
+        else if (key === 'p') penalty = '+2';
+        if (!penalty) return prev;
+        const updated = prev.map(s => s.id === lastId ? { ...s, status: penalty! } : s);
+        localStorage.setItem('neo_cube_solves', JSON.stringify(updated));
+        return updated;
+      });
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [puzzleType]);
+
+  const startBldMemo = () => {
+    setBldMemoMs(0);
+    setBldMemoRunning(true);
+    bldMemoStartRef.current = performance.now();
+    bldMemoIntervalRef.current = setInterval(() => {
+      setBldMemoMs(performance.now() - bldMemoStartRef.current);
+    }, 16);
+  };
+
+  const stopBldMemo = () => {
+    if (bldMemoIntervalRef.current) clearInterval(bldMemoIntervalRef.current);
+    setBldMemoRunning(false);
+    setBldPhase('solve');
+  };
+
+  // Reset BLD phase when puzzle changes away from BLD
+  React.useEffect(() => {
+    if (puzzleType !== 'BLD') { setBldPhase('memo'); setBldMemoMs(0); setBldMemoRunning(false); }
+  }, [puzzleType]);
+
   const applyPenalty = (solveId: string, penalty: 'OK' | '+2' | 'DNF') => {
     const updated = solves.map(s => s.id === solveId ? { ...s, status: penalty } : s);
     saveSolvesToStorage(updated);
+  };
+
+  const saveNote = (solveId: string, note: string) => {
+    const updated = solves.map(s => s.id === solveId ? { ...s, note } : s);
+    saveSolvesToStorage(updated);
+    setNoteEditId(null);
   };
 
   const deleteSolve = (solveId: string) => {
@@ -342,7 +412,7 @@ export default function TimerTerminal() {
     return () => clearInterval(trainIntervalRef.current);
   }, []);
 
-  const PUZZLE_TYPES = ['3x3x3', '2x2x2', '4x4x4', 'OH', 'Pyraminx', 'Megaminx'];
+  const PUZZLE_TYPES = ['3x3x3', '2x2x2', '4x4x4', '5x5x5', '6x6x6', '7x7x7', 'OH', 'BLD', 'Pyraminx', 'Megaminx', 'Skewb', 'Square-1', 'Clock'];
 
   const navItems = [
     { id: 'dashboard', icon: Timer, label: 'Timer' },
@@ -417,6 +487,16 @@ export default function TimerTerminal() {
                 <RefreshCw size={12} />
                 New Scramble
               </button>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-[#8b949e] font-mono">Target:</span>
+                <input
+                  type="text"
+                  value={targetTime}
+                  onChange={e => setTargetTime(e.target.value)}
+                  placeholder="e.g. 15.00"
+                  className="w-20 px-2 py-1 rounded-lg bg-[#161b22] border border-[#30363d] text-xs font-mono text-white placeholder-[#30363d] focus:outline-none focus:border-[#00dbe7]"
+                />
+              </div>
             </div>
 
             {/* Scramble display */}
@@ -445,10 +525,47 @@ export default function TimerTerminal() {
 
               {/* Timer */}
               <div className="lg:col-span-3 flex flex-col gap-4">
-                <TimerDisplay
-                  onSolveComplete={handleSolveComplete}
-                  onStatusChange={handleStatusChange}
-                />
+                {puzzleType === 'BLD' && bldPhase === 'memo' ? (
+                  <div className="flex flex-col items-center gap-4 p-8 bg-[#15191e]/80 border border-[#2b3139] rounded-2xl w-full">
+                    <div className="text-center">
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-[#8b949e] mb-1">BLD · Memo Phase</p>
+                      <p className="text-xs text-[#8b949e] mb-4">Study the scramble carefully. Start memo timer when ready.</p>
+                    </div>
+                    <div className="font-mono font-black text-6xl text-[#a3fa00]">
+                      {bldMemoRunning ? formatTime(bldMemoMs) : '0.000'}
+                    </div>
+                    <div className="text-[11px] font-mono uppercase tracking-widest text-[#8b949e]">
+                      {bldMemoRunning ? 'Memorizing… press Stop to begin solve' : 'Press Start to begin memorization'}
+                    </div>
+                    <div className="flex gap-3">
+                      {!bldMemoRunning ? (
+                        <button onClick={startBldMemo}
+                          className="px-6 py-2.5 rounded-xl bg-[#a3fa00] text-black font-bold text-sm hover:bg-[#a3fa00]/80 transition-all">
+                          Start Memo
+                        </button>
+                      ) : (
+                        <button onClick={stopBldMemo}
+                          className="px-6 py-2.5 rounded-xl bg-[#00dbe7] text-black font-bold text-sm hover:bg-[#00dbe7]/80 transition-all">
+                          Stop Memo → Begin Solve
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {puzzleType === 'BLD' && bldPhase === 'solve' && bldMemoMs > 0 && (
+                      <div className="flex items-center justify-between px-4 py-2 bg-[#a3fa00]/10 border border-[#a3fa00]/20 rounded-xl text-xs font-mono">
+                        <span className="text-[#8b949e]">Memo time</span>
+                        <span className="text-[#a3fa00] font-bold">{formatTime(bldMemoMs)}</span>
+                      </div>
+                    )}
+                    <TimerDisplay
+                      onSolveComplete={handleSolveComplete}
+                      onStatusChange={handleStatusChange}
+                      inspectionEnabled={inspectionOn && puzzleType !== 'BLD'}
+                    />
+                  </>
+                )}
 
                 {/* Quick stats */}
                 <div className={`grid grid-cols-4 gap-2 transition-all duration-300 ${timerBlurred ? 'opacity-20 blur-sm pointer-events-none' : ''}`}>
@@ -474,6 +591,7 @@ export default function TimerTerminal() {
                   <h3 className="text-sm font-semibold text-white">
                     Solves <span className="text-[#8b949e] font-normal">({activeSessionSolves.length})</span>
                   </h3>
+                  <span className="text-[9px] text-[#30363d] font-mono ml-2 hidden sm:inline">D=DNF · P=+2 · Z=undo</span>
                   {/* Cloud save indicator */}
                   {session?.user?.id ? (
                     <span className={`flex items-center gap-1 text-[10px] font-mono transition-all ${
@@ -536,18 +654,28 @@ export default function TimerTerminal() {
                     return (
                       <div
                         key={solve.id}
-                        className="flex items-center gap-3 px-3 py-2 bg-[#0d1117] border border-[#21262d] rounded-xl hover:border-[#30363d] transition-all group"
+                        className="flex flex-wrap items-center gap-3 px-3 py-2 bg-[#0d1117] border border-[#21262d] rounded-xl hover:border-[#30363d] transition-all group"
                       >
                         <span className="text-[10px] text-[#8b949e] font-mono w-6 text-right flex-shrink-0">
                           {activeSessionSolves.length - index}
                         </span>
                         <span className={`font-mono text-sm font-semibold flex-1 ${
                           solve.status === 'DNF' ? 'text-red-400' :
-                          solve.status === '+2' ? 'text-amber-400' : 'text-white'
+                          solve.status === '+2' ? 'text-amber-400' :
+                          (() => {
+                            const tMs = parseFloat(targetTime) * 1000;
+                            if (targetTime && !isNaN(tMs)) {
+                              return solve.timeInMs <= tMs ? 'text-emerald-400' : 'text-red-400';
+                            }
+                            return 'text-white';
+                          })()
                         }`}>
                           {displayTime}
                         </span>
-                        <span className="text-[10px] text-[#8b949e] hidden sm:block truncate max-w-[200px]">
+                        {solve.note && (
+                          <span className="text-[10px] text-[#8b949e] italic truncate max-w-[120px] hidden sm:block">{solve.note}</span>
+                        )}
+                        <span className="text-[10px] text-[#8b949e] hidden sm:block truncate max-w-[100px]">
                           {new Date(solve.timestamp).toLocaleTimeString()}
                         </span>
                         {/* Penalty buttons */}
@@ -565,12 +693,33 @@ export default function TimerTerminal() {
                             className={`px-1.5 py-0.5 rounded text-[10px] font-mono transition-all ${solve.status === 'DNF' ? 'bg-red-500/20 text-red-400' : 'text-[#8b949e] hover:text-red-400'}`}
                           >DNF</button>
                           <button
+                            onClick={() => { setNoteEditId(solve.id); setNoteEditText(solve.note ?? ''); }}
+                            className="px-1.5 py-0.5 rounded text-[10px] font-mono text-[#8b949e] hover:text-[#00dbe7] transition-all"
+                            title="Add note"
+                          >✎</button>
+                          <button
                             onClick={() => deleteSolve(solve.id)}
                             className="p-0.5 text-[#8b949e] hover:text-red-400 transition-colors ml-1"
                           >
                             <X size={11} />
                           </button>
                         </div>
+                        {/* Inline note editor */}
+                        {noteEditId === solve.id && (
+                          <div className="w-full mt-1 flex gap-1" onClick={e => e.stopPropagation()}>
+                            <input
+                              autoFocus
+                              type="text"
+                              value={noteEditText}
+                              onChange={e => setNoteEditText(e.target.value)}
+                              onKeyDown={e => { if (e.key === 'Enter') saveNote(solve.id, noteEditText); if (e.key === 'Escape') setNoteEditId(null); }}
+                              placeholder="Add note (Enter to save)"
+                              className="flex-1 px-2 py-0.5 rounded bg-[#161b22] border border-[#30363d] text-[11px] text-white placeholder-[#8b949e] focus:outline-none focus:border-[#00dbe7] font-mono"
+                            />
+                            <button onClick={() => saveNote(solve.id, noteEditText)} className="px-2 py-0.5 rounded bg-[#00dbe7]/10 text-[#00dbe7] text-[10px]">Save</button>
+                            <button onClick={() => setNoteEditId(null)} className="px-2 py-0.5 rounded text-[#8b949e] text-[10px]">✕</button>
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -813,9 +962,9 @@ export default function TimerTerminal() {
               ].map(({ q, a }) => (
                 <div key={q} className="bg-[#0d1117] border border-[#21262d] rounded-xl p-4">
                   <div className="flex items-start gap-2">
-                    <HelpCircle size={14} className="text-[#00dbe7] flex-shrink-0 mt-0.5" />
+                    <HelpCircle size={14} className="text-[#8b949e] mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-semibold text-white mb-1">{q}</p>
+                      <p className="text-xs font-semibold text-white mb-1">{q}</p>
                       <p className="text-xs text-[#8b949e] leading-relaxed">{a}</p>
                     </div>
                   </div>
@@ -825,29 +974,6 @@ export default function TimerTerminal() {
           </div>
         )}
       </div>
-
-      {/* Manual time entry modal */}
-      {isManualOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsManualOpen(false)} />
-          <div className="relative bg-[#0d1117] border border-[#30363d] rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-white">Manual Time Entry</h3>
-              <button onClick={() => setIsManualOpen(false)} className="p-1 text-[#8b949e] hover:text-white"><X size={15} /></button>
-            </div>
-            <div className="flex items-center gap-2 mb-4">
-              <input type="number" value={manualMinutes} onChange={e => setManualMinutes(e.target.value)} placeholder="MM" className="w-16 px-2 py-2 bg-[#161b22] border border-[#30363d] rounded-lg text-center text-white text-sm font-mono focus:outline-none focus:border-[#00dbe7]" min="0" max="99" />
-              <span className="text-[#8b949e]">:</span>
-              <input type="number" value={manualSeconds} onChange={e => setManualSeconds(e.target.value)} placeholder="SS" className="w-16 px-2 py-2 bg-[#161b22] border border-[#30363d] rounded-lg text-center text-white text-sm font-mono focus:outline-none focus:border-[#00dbe7]" min="0" max="59" />
-              <span className="text-[#8b949e]">.</span>
-              <input type="number" value={manualMs} onChange={e => setManualMs(e.target.value)} placeholder="000" className="w-20 px-2 py-2 bg-[#161b22] border border-[#30363d] rounded-lg text-center text-white text-sm font-mono focus:outline-none focus:border-[#00dbe7]" min="0" max="999" />
-            </div>
-            <button onClick={addManualTime} className="w-full py-2.5 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] font-bold text-sm hover:bg-[#00dbe7]/20 transition-all">
-              Add Solve
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

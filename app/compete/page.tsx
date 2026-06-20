@@ -5,63 +5,14 @@ import { Search, Trophy, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import CompetitionCard from '@/components/ui/CompetitionCard';
 import Modal from '@/components/ui/Modal';
 import { useSession, signIn } from 'next-auth/react';
+import {
+  CompetitionStatus,
+  Competition,
+  getPuzzleEmoji,
+  getStatusLabel,
+  getStatusColor,
+} from '@/lib/utils/competition';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export type CompetitionStatus =
-  | 'DRAFT' | 'REGISTRATION_OPEN' | 'REGISTRATION_CLOSED'
-  | 'LIVE' | 'COMPLETED' | 'CANCELLED' | 'ALL';
-
-export interface Competition {
-  _id: string;
-  name: string;
-  description?: string;
-  events: string[];
-  startDate: string;
-  endDate: string;
-  registrationDeadline?: string;
-  baseFee: number;
-  perEventFee: number;
-  isFree: boolean;
-  maxEntries: number;
-  status: Exclude<CompetitionStatus, 'ALL'>;
-  rounds: number;
-  currentRound: number;
-  prize?: string;
-  entries?: any[];
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-export function getPuzzleEmoji(type: string) {
-  const map: Record<string, string> = {
-    '3x3x3': '🟧', '2x2x2': '🟩', '4x4x4': '🟦', '5x5x5': '🟪',
-    'OH': '✋', 'Pyraminx': '🔺', 'Megaminx': '⭐', 'Skewb': '💠',
-    'Square-1': '⬜', 'Clock': '🕐',
-  };
-  return map[type] ?? '🧩';
-}
-
-export function getStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    DRAFT: 'Draft', REGISTRATION_OPEN: 'Registration Open',
-    REGISTRATION_CLOSED: 'Upcoming', LIVE: 'LIVE',
-    COMPLETED: 'Completed', CANCELLED: 'Cancelled',
-  };
-  return map[status] ?? status;
-}
-
-export function getStatusColor(status: string) {
-  const map: Record<string, string> = {
-    LIVE: 'text-red-400 bg-red-500/10 border-red-500/30',
-    REGISTRATION_OPEN: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
-    REGISTRATION_CLOSED: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
-    COMPLETED: 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/30',
-    DRAFT: 'text-[#8b949e] bg-[#8b949e]/10 border-[#8b949e]/30',
-    CANCELLED: 'text-red-300 bg-red-900/10 border-red-900/30',
-  };
-  return map[status] ?? 'text-white';
-}
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 
@@ -201,6 +152,7 @@ export default function CompeteLobby() {
         </div>
       </div>
 
+      {/* Competitio
       {/* Competition Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {loading && (
@@ -209,37 +161,24 @@ export default function CompeteLobby() {
             <p className="text-sm">Loading competitions...</p>
           </div>
         )}
-
         {error && !loading && (
           <div className="text-center py-16">
             <WifiOff size={40} className="mx-auto mb-3 text-red-400/40" />
             <p className="text-sm text-red-400">{error}</p>
             <p className="text-xs text-[#8b949e] mt-1">Make sure MONGODB_URI is set in your .env</p>
-            <button
-              onClick={fetchCompetitions}
-              className="mt-4 px-4 py-2 rounded-xl text-xs text-[#00dbe7] border border-[#00dbe7]/30 hover:bg-[#00dbe7]/10 transition-all"
-            >
-              Retry
-            </button>
+            <button onClick={fetchCompetitions} className="mt-4 px-4 py-2 rounded-xl text-xs text-[#00dbe7] border border-[#00dbe7]/30 hover:bg-[#00dbe7]/10 transition-all">Retry</button>
           </div>
         )}
-
         {!loading && !error && (
           <>
             {filtered.length === 0 ? (
               <div className="text-center py-16 text-[#8b949e]">
                 <Trophy size={40} className="mx-auto mb-3 opacity-30" />
-                <p className="text-sm">
-                  {competitions.length === 0
-                    ? 'No competitions yet. Admins can create one in the Admin Panel.'
-                    : 'No competitions match your filters.'}
-                </p>
+                <p className="text-sm">{competitions.length === 0 ? 'No competitions yet.' : 'No competitions match your filters.'}</p>
               </div>
             ) : (
               <>
-                <p className="text-xs text-[#8b949e] mb-4 font-mono">
-                  Showing {filtered.length} of {competitions.length} competitions
-                </p>
+                <p className="text-xs text-[#8b949e] mb-4 font-mono">Showing {filtered.length} of {competitions.length} competitions</p>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filtered.map(comp => (
                     <CompetitionCard
@@ -252,9 +191,9 @@ export default function CompeteLobby() {
                         events: comp.events,
                         startDate: comp.startDate,
                         endDate: comp.endDate,
-                        entryFee: comp.isFree ? 0 : Math.round(comp.baseFee / 100),
+                        entryFee: comp.isFree ? 0 : comp.baseFee,
                         maxEntries: comp.maxEntries,
-                        currentEntries: comp.entries?.length ?? 0,
+                        currentEntries: comp.currentEntries ?? 0,
                         status: comp.status,
                         rounds: comp.rounds,
                         currentRound: comp.currentRound ?? 1,
@@ -270,66 +209,29 @@ export default function CompeteLobby() {
         )}
       </div>
 
-      {/* Registration Modal */}
-      <Modal
-        isOpen={registerModal !== null}
-        onClose={() => setRegisterModal(null)}
-        title={`Register — ${registerModal?.name}`}
-        size="md"
-      >
+      <Modal isOpen={registerModal !== null} onClose={() => setRegisterModal(null)} title={`Register — ${registerModal?.name}`} size="md">
         {registerModal && (
           <div className="p-5 space-y-4">
             <div className="flex items-center gap-3 p-3 bg-[#161b22] rounded-xl border border-[#21262d]">
               <span className="text-2xl">{getPuzzleEmoji(registerModal.events[0])}</span>
               <div>
                 <p className="text-sm font-semibold text-white">{registerModal.name}</p>
-                <p className="text-xs text-[#8b949e]">
-                  {registerModal.events.join(', ')} · {registerModal.rounds} round{registerModal.rounds !== 1 ? 's' : ''}
-                </p>
+                <p className="text-xs text-[#8b949e]">{registerModal.events.join(', ')} · {registerModal.rounds} round{registerModal.rounds !== 1 ? 's' : ''}</p>
               </div>
             </div>
-
             <div className="space-y-2 text-sm">
               <div className="flex justify-between py-2 border-b border-[#21262d]">
                 <span className="text-[#8b949e]">Entry Fee</span>
-                <span className="font-bold text-white">
-                  {registerModal.isFree ? 'FREE' : `₹${Math.round(registerModal.baseFee / 100)}`}
-                </span>
+                <span className="font-bold text-white">{registerModal.isFree ? 'FREE' : `₹${registerModal.baseFee}`}</span>
               </div>
               <div className="flex justify-between py-2 border-b border-[#21262d]">
-                <span className="text-[#8b949e]">Spots Left</span>
-                <span className="font-bold text-white">
-                  {registerModal.maxEntries - (registerModal.entries?.length ?? 0)}
-                </span>
-              </div>
-              {registerModal.prize && (
-                <div className="flex justify-between py-2 border-b border-[#21262d]">
-                  <span className="text-[#8b949e]">Prize</span>
-                  <span className="font-bold text-amber-400">{registerModal.prize}</span>
-                </div>
-              )}
-              <div className="flex justify-between py-2">
                 <span className="text-[#8b949e]">Registered as</span>
                 <span className="font-semibold text-[#00dbe7]">{session?.user?.name}</span>
               </div>
             </div>
-
-            {!registerModal.isFree && (
-              <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl">
-                <p className="text-xs text-amber-400">
-                  Payment via Razorpay (coming soon). Registration will be confirmed after payment.
-                </p>
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                alert('Registration coming soon — Razorpay integration in next sprint.');
-                setRegisterModal(null);
-              }}
-              className="w-full py-3 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] font-bold text-sm hover:bg-[#00dbe7]/20 transition-all"
-            >
-              {registerModal.isFree ? 'Register Free' : `Pay ₹${Math.round(registerModal.baseFee / 100)} & Register`}
+            <button onClick={() => { alert('Registration coming soon.'); setRegisterModal(null); }}
+              className="w-full py-3 rounded-xl bg-[#00dbe7]/10 border border-[#00dbe7]/30 text-[#00dbe7] font-bold text-sm hover:bg-[#00dbe7]/20 transition-all">
+              {registerModal.isFree ? 'Register Free' : `Pay ₹${registerModal.baseFee} & Register`}
             </button>
           </div>
         )}

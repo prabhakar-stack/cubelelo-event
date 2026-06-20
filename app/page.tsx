@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSession, signIn } from 'next-auth/react';
-import { Timer, Trophy, Dumbbell, ChevronRight, Zap, Users, Star, TrendingUp } from 'lucide-react';
-import AuthModal from '@/components/ui/AuthModal';
+import { useSession } from 'next-auth/react';
+import { Timer, Trophy, Dumbbell, ChevronRight, Zap, Users, Star, Calendar, ArrowRight } from 'lucide-react';
 
 const FEATURES = [
   {
@@ -12,7 +11,7 @@ const FEATURES = [
     color: 'text-[#00dbe7]',
     bg: 'bg-[#00dbe7]/10 border-[#00dbe7]/20',
     title: 'Timer Terminal',
-    description: 'Sub-millisecond Web Worker precision. WCA Stackmat logic. 2D/3D scramble visualizer.',
+    description: 'Sub-millisecond Web Worker precision. WCA Stackmat logic. 2D scramble visualizer for all events.',
     href: '/timer',
     cta: 'Open Timer',
   },
@@ -21,7 +20,7 @@ const FEATURES = [
     color: 'text-amber-400',
     bg: 'bg-amber-400/10 border-amber-400/20',
     title: 'Competitions',
-    description: 'WCA-style online events. Live leaderboards, Razorpay payments, and real-time round management.',
+    description: 'WCA-style online events. Simultaneous scramble reveals, live leaderboards, Razorpay payments.',
     href: '/compete',
     cta: 'Browse Events',
   },
@@ -30,40 +29,224 @@ const FEATURES = [
     color: 'text-[#a3fa00]',
     bg: 'bg-[#a3fa00]/10 border-[#a3fa00]/20',
     title: 'Practice Mode',
-    description: 'Daily challenges, OLL/PLL drills, progress heatmaps, and historical analysis.',
+    description: 'Daily challenges, session stats, ao5/ao12 tracking, and PB celebration.',
     href: '/practice',
     cta: 'Start Practicing',
   },
 ];
 
 const STATS = [
-  { label: 'Active Athletes', value: '2,400+', icon: Users },
-  { label: 'Competitions Hosted', value: '120+', icon: Trophy },
-  { label: 'Solves Logged', value: '850K+', icon: Zap },
+  { label: 'Active Athletes', value: '10K+', icon: Users },
+  { label: 'Competitions Hosted', value: '500+', icon: Trophy },
+  { label: 'Solves Logged', value: '2M+', icon: Zap },
   { label: 'Platform Uptime', value: '99.9%', icon: Star },
 ];
 
+interface CompSnippet {
+  _id: string;
+  name: string;
+  events: string[];
+  status: string;
+}
+
+
+interface CarouselItem {
+  _id: string; image: string; link?: string; colour?: string;
+  text?: string; mobileCarousel?: boolean;
+}
+
+function AnnouncementBanner() {
+  const [text, setText] = React.useState('');
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('cl_announcement');
+      if (stored) setText(stored);
+    }
+  }, []);
+  if (!text) return null;
+  return (
+    <div className="bg-amber-400/10 border-b border-amber-400/20 px-4 py-2 text-center">
+      <p className="text-xs text-amber-400 font-medium">{text}</p>
+    </div>
+  );
+}
+
+function CarouselHero() {
+  const [slides, setSlides] = React.useState<CarouselItem[]>([]);
+  const [idx, setIdx] = React.useState(0);
+  React.useEffect(() => {
+    fetch('/api/carousels')
+      .then(r => r.json())
+      .then(d => { if (d.carousels?.length) setSlides(d.carousels); })
+      .catch(() => {});
+  }, []);
+  React.useEffect(() => {
+    if (slides.length <= 1) return;
+    const t = setInterval(() => setIdx(i => (i + 1) % slides.length), 5000);
+    return () => clearInterval(t);
+  }, [slides.length]);
+
+  if (!slides.length) return null;
+  const slide = slides[idx];
+  return (
+    <div className="relative w-full overflow-hidden" style={{ background: slide.colour ?? '#0d1117' }}>
+      <a href={slide.link ?? '#'} className="block w-full">
+        <img src={slide.image} alt={slide.text ?? ''} className="w-full object-cover max-h-[400px]" />
+      </a>
+      {slide.text && (
+        <div className="absolute bottom-4 left-0 right-0 text-center">
+          <span className="px-4 py-2 bg-black/60 rounded-full text-white text-sm font-semibold">{slide.text}</span>
+        </div>
+      )}
+      {slides.length > 1 && (
+        <div className="absolute bottom-2 right-4 flex gap-1.5">
+          {slides.map((_, i) => (
+            <button key={i} onClick={() => setIdx(i)}
+              className={`w-2 h-2 rounded-full transition-all ${i === idx ? 'bg-white' : 'bg-white/30'}`} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LiveBanner() {
+  const [comps, setComps] = useState<CompSnippet[]>([]);
+  useEffect(() => {
+    fetch('/api/competitions?status=LIVE&limit=3')
+      .then(r => r.json())
+      .then(d => setComps(d.competitions ?? []))
+      .catch(() => {});
+  }, []);
+  if (!comps.length) return null;
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-10">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+        <span className="text-xs font-bold text-red-400 font-mono uppercase tracking-widest">Live Now</span>
+      </div>
+      <div className="grid sm:grid-cols-3 gap-3">
+        {comps.map(c => (
+          <Link key={c._id} href={`/compete/${c._id}`}
+            className="flex items-center justify-between px-4 py-3 rounded-xl bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-all">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{c.name}</p>
+              <p className="text-xs text-[#8b949e]">{c.events?.join(' · ')}</p>
+            </div>
+            <ArrowRight size={14} className="text-red-400 flex-shrink-0 ml-2" />
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function UpcomingComps() {
+  const [comps, setComps] = useState<CompSnippet[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    fetch('/api/competitions?status=REGISTRATION_OPEN&limit=4')
+      .then(r => r.json())
+      .then(d => { setComps(d.competitions ?? []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  if (loading) return (
+    <div className="grid sm:grid-cols-2 gap-3">
+      {[1, 2].map(i => <div key={i} className="h-20 rounded-xl bg-[#0d1117] border border-[#21262d] animate-pulse" />)}
+    </div>
+  );
+
+  if (!comps.length) return (
+    <div className="text-center py-10 text-[#8b949e] text-sm border border-dashed border-[#21262d] rounded-2xl">
+      No upcoming competitions right now. Check back soon!
+    </div>
+  );
+
+  return (
+    <div className="grid sm:grid-cols-2 gap-3">
+      {comps.map(c => (
+        <Link key={c._id} href={`/compete/${c._id}`}
+          className="flex items-center justify-between px-4 py-4 rounded-xl bg-[#0d1117] border border-[#21262d] hover:border-[#30363d] hover:bg-[#161b22] transition-all">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white truncate">{c.name}</p>
+            <p className="text-xs text-[#8b949e] mt-0.5">{c.events?.join(' · ')}</p>
+          </div>
+          <span className="text-[10px] font-mono text-amber-400 border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 rounded-full flex-shrink-0 ml-3">
+            Open
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function PastResults() {
+  const [comps, setComps] = useState<CompSnippet[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    fetch('/api/competitions?status=COMPLETED&limit=6')
+      .then(r => r.json())
+      .then(d => { setComps(d.competitions ?? []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+  if (!loading && !comps.length) return null;
+  return (
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <Trophy size={16} className="text-[#8b949e]" />
+          <h2 className="font-bold text-white">Past Results</h2>
+        </div>
+        <a href="/compete" className="text-xs text-[#00dbe7] hover:underline flex items-center gap-1">
+          All results <ArrowRight size={12} />
+        </a>
+      </div>
+      {loading ? (
+        <div className="grid sm:grid-cols-3 gap-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-xl bg-[#0d1117] border border-[#21262d] animate-pulse" />)}
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-3 gap-3">
+          {comps.map(c => (
+            <Link key={c._id} href={`/compete/${c._id}/results`}
+              className="flex items-center justify-between px-4 py-3 rounded-xl bg-[#0d1117] border border-[#21262d] hover:border-[#30363d] hover:bg-[#161b22] transition-all">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{c.name}</p>
+                <p className="text-xs text-[#8b949e] mt-0.5">{c.events?.join(' · ')}</p>
+              </div>
+              <span className="text-[10px] font-mono text-[#8b949e] border border-[#30363d] bg-[#161b22] px-2 py-0.5 rounded-full flex-shrink-0 ml-3">
+                Ended
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function HomePage() {
   const { data: session } = useSession();
-  const [authOpen, setAuthOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0b0e11] text-white">
-      {/* Hero */}
-      <div className="relative overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#00dbe7]/5 rounded-full blur-3xl" />
-        </div>
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-20 text-center">
-          {/* Badge */}
+      <AnnouncementBanner />
+      <CarouselHero />
+
+      {/* ── Hero ── */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-[#00dbe7]/4 rounded-full blur-3xl" />
+        </div>
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-24 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#161b22] border border-[#30363d] text-xs font-mono text-[#00dbe7] mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00dbe7] animate-pulse" />
-            Phase 1 · Now Live
+            India's #1 Speedcubing Platform
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight mb-4">
+          <h1 className="text-5xl sm:text-7xl font-black tracking-tight mb-5 leading-none">
             The{' '}
             <span className="bg-gradient-to-r from-[#00dbe7] to-[#a3fa00] bg-clip-text text-transparent">
               Cubelelo
@@ -71,40 +254,32 @@ export default function HomePage() {
             {' '}Platform
           </h1>
 
-          <p className="text-lg text-[#8b949e] max-w-xl mx-auto mb-8 leading-relaxed">
+          <p className="text-lg text-[#8b949e] max-w-xl mx-auto mb-10 leading-relaxed">
             Compete in WCA-style online events, train with precision tools,
-            and track your speedcubing journey — all in one place.
+            and track your entire speedcubing journey.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             {session ? (
-              <Link
-                href="/timer"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#00dbe7] hover:bg-[#00dbe7]/90 text-black font-bold text-sm transition-all shadow-lg shadow-[#00dbe7]/20"
-              >
-                Open Timer
-                <ChevronRight size={16} />
+              <Link href="/timer"
+                className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#00dbe7] hover:bg-[#00c4d0] text-black font-bold transition-all shadow-lg shadow-[#00dbe7]/20">
+                Open Timer <ChevronRight size={16} />
               </Link>
             ) : (
-              <button
-                onClick={() => setAuthOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#00dbe7] hover:bg-[#00dbe7]/90 text-black font-bold text-sm transition-all shadow-lg shadow-[#00dbe7]/20"
-              >
-                Get Started Free
-                <ChevronRight size={16} />
-              </button>
+              <Link href="/signup"
+                className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#00dbe7] hover:bg-[#00c4d0] text-black font-bold transition-all shadow-lg shadow-[#00dbe7]/20">
+                Get Started Free <ChevronRight size={16} />
+              </Link>
             )}
-            <Link
-              href="/compete"
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-medium text-sm transition-all"
-            >
+            <Link href="/compete"
+              className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-medium transition-all">
               Browse Competitions
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Stats Bar */}
+      {/* ── Stats Bar ── */}
       <div className="border-y border-[#21262d] bg-[#0d1117]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-2 sm:grid-cols-4 gap-6">
           {STATS.map(({ label, value, icon: Icon }) => (
@@ -119,66 +294,24 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Feature Cards */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl font-bold text-white mb-2">Everything You Need</h2>
-          <p className="text-sm text-[#8b949e]">Three modules. One platform.</p>
+      {/* ── Live / Upcoming Competitions ── */}
+      <LiveBanner />
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-black">Upcoming Competitions</h2>
+          <Link href="/competitions" className="text-xs text-[#00dbe7] hover:underline">View all →</Link>
         </div>
+        <UpcomingComps />
+      </section>
 
-        <div className="grid sm:grid-cols-3 gap-4">
-          {FEATURES.map(({ icon: Icon, color, bg, title, description, href, cta }) => (
-            <div
-              key={href}
-              className="group relative bg-[#0d1117] border border-[#21262d] hover:border-[#30363d] rounded-2xl p-6 transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/40"
-            >
-              <div className={`w-10 h-10 rounded-xl border ${bg} flex items-center justify-center mb-4`}>
-                <Icon size={20} className={color} />
-              </div>
-              <h3 className="font-semibold text-white mb-2">{title}</h3>
-              <p className="text-xs text-[#8b949e] leading-relaxed mb-5">{description}</p>
-              <Link
-                href={href}
-                className={`flex items-center gap-1.5 text-xs font-semibold ${color} hover:opacity-80 transition-opacity`}
-              >
-                {cta}
-                <ChevronRight size={13} />
-              </Link>
-            </div>
-          ))}
+      {/* ── Past Results ── */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-12">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-black">Past Results</h2>
+          <Link href="/competitions?status=COMPLETED" className="text-xs text-[#00dbe7] hover:underline">View all →</Link>
         </div>
-      </div>
-
-      {/* Module status tracker */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-2xl p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp size={16} className="text-[#00dbe7]" />
-            <h3 className="font-semibold text-white text-sm">Platform Build Status</h3>
-            <span className="ml-auto text-xs text-[#8b949e] font-mono">Phase 1 · Foundation</span>
-          </div>
-          <div className="space-y-3">
-            {[
-              { label: 'Module 1 · Timer Terminal', status: 'Foundation Built', color: 'text-[#00dbe7]', dot: 'bg-[#00dbe7]' },
-              { label: 'Module 2 · Competitions', status: 'Foundation Built', color: 'text-[#00dbe7]', dot: 'bg-[#00dbe7]' },
-              { label: 'Module 3 · Practice Mode', status: 'Foundation Built', color: 'text-[#00dbe7]', dot: 'bg-[#00dbe7]' },
-              { label: 'Auth · Google OAuth', status: 'Configured (add credentials)', color: 'text-amber-400', dot: 'bg-amber-400' },
-              { label: 'Database · Prisma + PostgreSQL', status: 'Schema ready (add DATABASE_URL)', color: 'text-amber-400', dot: 'bg-amber-400' },
-              { label: 'Payments · Razorpay', status: 'Coming next', color: 'text-[#8b949e]', dot: 'bg-[#8b949e]' },
-            ].map(({ label, status, color, dot }) => (
-              <div key={label} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
-                  <span className="text-[#8b949e]">{label}</span>
-                </div>
-                <span className={`font-medium ${color}`}>{status}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+        <PastResults />
+      </section>
     </div>
   );
 }

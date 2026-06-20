@@ -9,16 +9,22 @@ interface ScrambleVisualizerProps {
 }
 
 const mapPuzzleTypeToTwisty = (type: string): string => {
-  switch (type) {
-    case 'OH':
-      return '3x3x3';
-    case 'Pyraminx':
-      return 'pyraminx';
-    case 'Megaminx':
-      return 'megaminx';
-    default:
-      return type; // '3x3x3', '2x2x2', '4x4x4'
-  }
+  const map: Record<string, string> = {
+    '3x3x3':   '3x3x3',
+    '2x2x2':   '2x2x2',
+    '4x4x4':   '4x4x4',
+    '5x5x5':   '5x5x5',
+    '6x6x6':   '6x6x6',
+    '7x7x7':   '7x7x7',
+    'OH':       '3x3x3',
+    'BLD':      '3x3x3',
+    'Pyraminx': 'pyraminx',
+    'Megaminx': 'megaminx',
+    'Skewb':    'skewb',
+    'Square-1': 'square1',
+    'Clock':    'clock',
+  };
+  return map[type] ?? '3x3x3';
 };
 
 export default function ScrambleVisualizer({ scramble, puzzleType, onGenerateNew }: ScrambleVisualizerProps) {

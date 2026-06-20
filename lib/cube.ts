@@ -563,31 +563,120 @@ export function generateScramble(puzzleType: string): string {
     return lines.join('\n');
   }
 
-  return 'R2 F2 U\' L2 U R2 D B2 U2 R2 B\' U2 L\' B\' D B2 R D\' F\'';
+  // --- Skewb ---
+  if (puzzleType === 'Skewb') {
+    const skewbMoves = ['R', "R'", 'L', "L'", 'U', "U'", 'B', "B'"];
+    const seq: string[] = [];
+    let last = '';
+    while (seq.length < 11) {
+      const m = skewbMoves[Math.floor(Math.random() * skewbMoves.length)];
+      if (m[0] !== last) { seq.push(m); last = m[0]; }
+    }
+    return seq.join(' ');
+  }
+
+
+  if (puzzleType === '5x5x5') {
+    const w5 = ['U',"U'","U2",'D',"D'","D2",'R',"R'","R2",'L',"L'","L2",'F',"F'","F2",'B',"B'","B2",
+                'Uw',"Uw'","Uw2",'Dw',"Dw'","Dw2",'Rw',"Rw'","Rw2",'Lw',"Lw'","Lw2",'Fw',"Fw'","Fw2",'Bw',"Bw'","Bw2",
+                '3Uw',"3Uw'","3Uw2",'3Rw',"3Rw'","3Rw2",'3Fw',"3Fw'","3Fw2"];
+    const seq: string[] = []; let lastBase = '';
+    while (seq.length < 60) {
+      const m = w5[Math.floor(Math.random() * w5.length)];
+      const base = m.replace(/[^A-Za-z]/g,'');
+      if (base !== lastBase) { seq.push(m); lastBase = base; }
+    }
+    return seq.join(' ');
+  }
+
+  if (puzzleType === '6x6x6') {
+    const w6 = ['U',"U'","U2",'D',"D'","D2",'R',"R'","R2",'L',"L'","L2",'F',"F'","F2",'B',"B'","B2",
+                'Uw',"Uw'","Uw2",'Dw',"Dw'","Dw2",'Rw',"Rw'","Rw2",'Lw',"Lw'","Lw2",'Fw',"Fw'","Fw2",'Bw',"Bw'","Bw2",
+                '3Uw',"3Uw'","3Uw2",'3Rw',"3Rw'","3Rw2",'4Uw',"4Uw'","4Uw2",'4Rw',"4Rw'","4Rw2"];
+    const seq: string[] = []; let lastBase = '';
+    while (seq.length < 80) {
+      const m = w6[Math.floor(Math.random() * w6.length)];
+      const base = m.replace(/[^A-Za-z]/g,'');
+      if (base !== lastBase) { seq.push(m); lastBase = base; }
+    }
+    return seq.join(' ');
+  }
+
+  if (puzzleType === '7x7x7') {
+    const w7 = ['U',"U'","U2",'D',"D'","D2",'R',"R'","R2",'L',"L'","L2",'F',"F'","F2",'B',"B'","B2",
+                'Uw',"Uw'","Uw2",'Dw',"Dw'","Dw2",'Rw',"Rw'","Rw2",'Lw',"Lw'","Lw2",'Fw',"Fw'","Fw2",'Bw',"Bw'","Bw2",
+                '3Uw',"3Uw'","3Uw2",'3Rw',"3Rw'","3Rw2",'4Uw',"4Uw'","4Uw2",'4Rw',"4Rw'","4Rw2",'5Uw',"5Uw'","5Uw2"];
+    const seq: string[] = []; let lastBase = '';
+    while (seq.length < 100) {
+      const m = w7[Math.floor(Math.random() * w7.length)];
+      const base = m.replace(/[^A-Za-z]/g,'');
+      if (base !== lastBase) { seq.push(m); lastBase = base; }
+    }
+    return seq.join(' ');
+  }
+
+  if (puzzleType === 'Square-1') {
+    const parts: string[] = [];
+    for (let i = 0; i < 9; i++) {
+      const top = Math.floor(Math.random() * 13) - 6;
+      const bot = Math.floor(Math.random() * 13) - 6;
+      parts.push('(' + top + ',' + bot + ')');
+      if (i < 8) parts.push('/');
+    }
+    return parts.join(' ');
+  }
+
+  if (puzzleType === 'Clock') {
+    const pinNames = ['UL','UR','DL','DR'];
+    const hands = ['UR','DR','DL','UL','U','R','D','L','ALL'];
+    const pins = pinNames.map(() => Math.random() > 0.5 ? 'd' : 'u').join('');
+    const moves = hands.map(h => h + (Math.floor(Math.random()*12)+1) + '+');
+    return pins + ' ' + moves.join(' ');
+  }
+
+  if (puzzleType === 'BLD') {
+    const bldMoves = ['U',"U'","U2",'D',"D'","D2",'R',"R'","R2",'L',"L'","L2",'F',"F'","F2",'B',"B'","B2"];
+    const sequence: string[] = [];
+    let lastFace = '';
+    while (sequence.length < 20) {
+      const m = bldMoves[Math.floor(Math.random() * bldMoves.length)];
+      if (m[0] !== lastFace) { sequence.push(m); lastFace = m[0]; }
+    }
+    return sequence.join(' ');
+  }
+
+  return "R2 F2 U' L2 U R2 D B2 U2 R2 B' U2 L' B' D B2 R D' F'";
 }
 
-// Full 3x3x3 solver tracker
-export function getScrambled3x3(scrambleStr: string): CubeState3x3 {
-  let state = getInitialCubeState3();
-  if (!scrambleStr) return state;
+// ── WCA event ID map for cubing.js ────────────────────────────────────────────
+export const WCA_EVENT_MAP: Record<string, string> = {
+  '3x3x3':   '333',
+  '2x2x2':   '222',
+  '4x4x4':   '444',
+  '5x5x5':   '555',
+  '6x6x6':   '666',
+  '7x7x7':   '777',
+  'OH':       '333oh',
+  'BLD':      '333bf',
+  'Pyraminx': 'pyram',
+  'Megaminx': 'minx',
+  'Skewb':    'skewb',
+  'Square-1': 'sq1',
+  'Clock':    'clock',
+};
 
-  const moves = scrambleStr.trim().split(/\s+/);
-  for (const move of moves) {
-    if (!move) continue;
-    state = applySingleMove3(state, move);
+/**
+ * Async scramble generation using cubing.js (WCA random-state).
+ * Falls back to the synchronous custom generator on error or SSR.
+ */
+export async function generateScrambleAsync(puzzleType: string): Promise<string> {
+  if (typeof window === 'undefined') return generateScramble(puzzleType);
+  try {
+    const { randomScrambleForEvent } = await import('cubing/scramble');
+    const eventId = WCA_EVENT_MAP[puzzleType] ?? '333';
+    const alg = await randomScrambleForEvent(eventId);
+    return alg.toString();
+  } catch {
+    return generateScramble(puzzleType);
   }
-  return state;
-}
-
-// Full 2x2x2 solver tracker
-export function getScrambled2x2(scrambleStr: string): CubeState2x2 {
-  let state = getInitialCubeState2();
-  if (!scrambleStr) return state;
-
-  const moves = scrambleStr.trim().split(/\s+/);
-  for (const move of moves) {
-    if (!move) continue;
-    state = applySingleMove2(state, move);
-  }
-  return state;
 }

@@ -68,6 +68,14 @@ export default function DailyChallenge() {
     ? dailyLeaderboard.filter(e => (e.average ?? Infinity) < myTime).length + 1
     : null;
 
+  if (!challenge) {
+    return (
+      <div className="min-h-screen bg-[#0b0e11] flex items-center justify-center text-[#8b949e] font-mono text-sm">
+        Loading today's scramble…
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0b0e11] text-white">
       {/* Header */}
@@ -185,23 +193,17 @@ export default function DailyChallenge() {
               <div className="grid grid-cols-7 gap-1">
                 {Array(35).fill(null).map((_, i) => {
                   const completed = i < 30 && Math.random() > 0.3;
-                  const isToday = i === 34;
                   return (
                     <div
                       key={i}
-                      title={isToday ? 'Today' : ''}
-                      className={`aspect-square rounded-sm transition-colors ${
-                        isToday
-                          ? submitted ? 'bg-amber-400' : 'bg-amber-400/30 border border-amber-400/50'
-                          : completed ? 'bg-[#00dbe7]/40' : 'bg-[#161b22]'
+                      title={completed ? 'Completed' : 'Missed'}
+                      className={`w-full aspect-square rounded-sm ${
+                        completed ? 'bg-[#00dbe7]/50' : 'bg-[#161b22]'
                       }`}
                     />
                   );
                 })}
               </div>
-              <Link href="/practice/history" className="block mt-3 text-xs text-center text-[#8b949e] hover:text-[#00dbe7] transition-colors">
-                View full history →
-              </Link>
             </div>
           </div>
         </div>

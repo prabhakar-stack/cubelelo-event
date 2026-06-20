@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import SessionProviderWrapper from '@/components/ui/SessionProviderWrapper';
 import NavBar from '@/components/ui/NavBar';
+import ClientMain from '@/components/ui/ClientMain';
 
 export const metadata: Metadata = {
   title: 'Cubelelo — Elite Speedcubing Platform',
@@ -27,12 +28,8 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <SessionProviderWrapper>
-          {/* Fixed top navigation */}
           <NavBar />
-          {/* Page content — offset by nav height */}
-          <main className="pt-14 min-h-screen">
-            {children}
-          </main>
+          <ClientMain>{children}</ClientMain>
         </SessionProviderWrapper>
       </body>
     </html>
