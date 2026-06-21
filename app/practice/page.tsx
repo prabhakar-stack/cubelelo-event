@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Dumbbell, Calendar, History, ChevronRight, Zap, RefreshCw, Trophy, Clock } from 'lucide-react';
 import { generateScramble } from '@/lib/cube';
+import DailyChallengeSection from '@/components/ui/DailyChallengeSection';
+import UpcomingCompetitionsRail from '@/components/ui/UpcomingCompetitionsRail';
 
 const TimerDisplay = dynamic(() => import('@/components/TimerDisplay'), { ssr: false });
 const ScrambleVisualizer = dynamic(() => import('@/components/ScrambleVisualizer'), { ssr: false });
@@ -117,10 +119,16 @@ export default function PracticePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Daily challenge — engagement hub */}
+        <DailyChallengeSection />
+
         <div className="grid lg:grid-cols-3 gap-6">
 
           {/* Sidebar: stats */}
           <div className="space-y-4">
+
+            {/* Upcoming competitions rail */}
+            <UpcomingCompetitionsRail />
 
             {/* Overall stats */}
             {session?.user?.id && (

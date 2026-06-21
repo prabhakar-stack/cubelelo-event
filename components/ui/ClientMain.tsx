@@ -9,7 +9,7 @@ export default function ClientMain({ children }: { children: React.ReactNode }) 
   const isAuthPage = NO_NAVBAR_ROUTES.some(r => pathname === r);
 
   return (
-    <main className={isAuthPage ? 'min-h-screen' : 'pt-14 min-h-screen'}>
+    <main className={isAuthPage ? 'min-h-screen' : 'pt-14 pb-16 md:pb-0 min-h-screen'}>
       {children}
     </main>
   );

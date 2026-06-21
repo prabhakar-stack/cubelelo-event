@@ -5,6 +5,8 @@ import NavBar from '@/components/ui/NavBar';
 import Footer from '@/components/ui/Footer';
 import ClientMain from '@/components/ui/ClientMain';
 import ThemeManager from '@/components/ui/ThemeManager';
+import MobileTabBar from '@/components/ui/MobileTabBar';
+import CommandPalette from '@/components/ui/CommandPalette';
 
 export const metadata: Metadata = {
   title: 'Cubelelo — Elite Speedcubing Platform',
@@ -35,9 +37,11 @@ export default function RootLayout({
       >
         <SessionProviderWrapper>
           <ThemeManager />
+          <CommandPalette />
           <NavBar />
           <ClientMain>{children}</ClientMain>
           <Footer />
+          <MobileTabBar />
         </SessionProviderWrapper>
       </body>
     </html>

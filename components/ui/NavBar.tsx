@@ -1,62 +1,45 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
-  Timer,
-  Trophy,
-  Dumbbell,
-  LogIn,
-  LogOut,
-  ChevronDown,
-  Menu,
-  X,
-  Shield,
-  UserPlus,
-  Search,
+  Timer, Trophy, Dumbbell, BarChart3, LogIn, LogOut, ChevronDown,
+  Shield, UserPlus, Search, Bell,
 } from 'lucide-react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import LiveBadge from '@/components/ui/LiveBadge';
+import StreakFlame from '@/components/ui/StreakFlame';
 
 const NAV_LINKS = [
-  { href: '/timer', label: 'Timer', icon: Timer, description: 'Practice & Sessions' },
-  { href: '/compete', label: 'Compete', icon: Trophy, description: 'Competitions & Events' },
-  { href: '/practice', label: 'Practice', icon: Dumbbell, description: 'Drills & Daily Challenge' },
+  { href: '/practice', label: 'Practice', icon: Dumbbell },
+  { href: '/competitions', label: 'Compete', icon: Trophy },
+  { href: '/timer', label: 'Timer', icon: Timer },
+  { href: '/rankings', label: 'Rankings', icon: BarChart3 },
 ];
+
+function openPalette() {
+  window.dispatchEvent(new CustomEvent('cl:open-palette'));
+}
 
 export default function NavBar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
-  const router = useRouter();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const searchRef = useRef<HTMLInputElement>(null);
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const q = searchQuery.trim();
-    if (q) {
-      router.push(`/search/${encodeURIComponent(q)}`);
-      setSearchQuery('');
-      searchRef.current?.blur();
-    }
-  }
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
 
-  const isActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + '/');
-
-  // Don't show navbar on auth pages — they have their own branding
+  // Auth pages have their own branding
   if (pathname === '/login' || pathname === '/signup') return null;
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-xl border-b border-line">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14 gap-3">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-lime flex items-center justify-center shadow-lg shadow-accent/20 group-hover:shadow-accent/40 transition-shadow">
             <span className="text-black font-black text-xs">CB</span>
           </div>
@@ -65,31 +48,14 @@ export default function NavBar() {
           </span>
         </Link>
 
-        {/* Search bar */}
-        <form onSubmit={handleSearch} className="hidden sm:flex items-center mx-4">
-          <div className="relative">
-            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
-            <input
-              ref={searchRef}
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Search CL ID or name…"
-              className="w-44 lg:w-56 pl-7 pr-3 py-1.5 bg-elevated border border-line-strong rounded-lg text-xs text-fg placeholder-muted focus:outline-none focus:border-accent focus:w-64 transition-all"
-            />
-          </div>
-        </form>
-
-        {/* Desktop Nav Links */}
+        {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-1">
           {NAV_LINKS.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                isActive(href)
-                  ? 'bg-line text-accent'
-                  : 'text-muted hover:text-fg hover:bg-line/60'
+                isActive(href) ? 'bg-line text-accent' : 'text-muted hover:text-fg hover:bg-line/60'
               }`}
             >
               <Icon size={15} />
@@ -98,9 +64,32 @@ export default function NavBar() {
           ))}
         </div>
 
-        {/* Right: Auth */}
-        <div className="flex items-center gap-2">
-          {/* Appearance toggle */}
+        {/* Command palette trigger (desktop) */}
+        <button
+          onClick={openPalette}
+          className="hidden sm:flex items-center gap-2 flex-1 max-w-xs mx-2 px-3 py-1.5 bg-elevated border border-line-strong rounded-lg text-xs text-muted hover:text-fg hover:border-muted transition-all"
+        >
+          <Search size={13} />
+          <span className="flex-1 text-left">Search CL ID, competition…</span>
+          <span className="font-mono text-[10px] border border-line-strong rounded px-1">⌘K</span>
+        </button>
+
+        {/* Right cluster */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          {/* Search icon (mobile) */}
+          <button onClick={openPalette} aria-label="Search" className="sm:hidden p-1.5 rounded-lg text-muted hover:text-fg hover:bg-line transition-colors">
+            <Search size={17} />
+          </button>
+
+          <LiveBadge />
+          <StreakFlame />
+
+          {session && (
+            <Link href="/profile/me/settings" aria-label="Notifications" className="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-line transition-colors">
+              <Bell size={17} />
+            </Link>
+          )}
+
           <ThemeToggle />
 
           {status === 'loading' ? (
@@ -109,26 +98,17 @@ export default function NavBar() {
             <div className="relative">
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-line transition-all"
+                className="flex items-center gap-2 px-1.5 sm:px-2 py-1.5 rounded-lg hover:bg-line transition-all"
               >
                 {session.user?.image ? (
-                  <Image
-                    src={session.user.image}
-                    alt={session.user.name ?? 'User'}
-                    width={28}
-                    height={28}
-                    className="rounded-full border border-line-strong"
-                    unoptimized
-                  />
+                  <Image src={session.user.image} alt={session.user.name ?? 'User'} width={28} height={28} className="rounded-full border border-line-strong" unoptimized />
                 ) : (
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-accent to-lime flex items-center justify-center text-black font-bold text-xs">
                     {session.user?.name?.[0] ?? '?'}
                   </div>
                 )}
-                <span className="text-sm text-fg hidden sm:block max-w-[100px] truncate">
-                  {session.user?.name}
-                </span>
-                <ChevronDown size={13} className="text-muted" />
+                <span className="text-sm text-fg hidden lg:block max-w-[100px] truncate">{session.user?.name}</span>
+                <ChevronDown size={13} className="text-muted hidden sm:block" />
               </button>
 
               {profileOpen && (
@@ -137,46 +117,27 @@ export default function NavBar() {
                   <div className="absolute right-0 top-full mt-1 w-56 bg-elevated border border-line-strong rounded-xl shadow-2xl z-20 overflow-hidden">
                     <div className="px-3 py-2.5 border-b border-line">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <p className="text-sm font-semibold text-fg truncate">
-                          {session.user?.name}
-                        </p>
+                        <p className="text-sm font-semibold text-fg truncate">{session.user?.name}</p>
                         {session.user?.role === 'admin' && (
-                          <span className="text-[9px] font-mono font-bold text-amber-400 border border-amber-400/30 px-1.5 py-0.5 rounded-full flex-shrink-0">
-                            ADMIN
-                          </span>
+                          <span className="text-[9px] font-mono font-bold text-amber-400 border border-amber-400/30 px-1.5 py-0.5 rounded-full flex-shrink-0">ADMIN</span>
                         )}
                       </div>
                       <p className="text-xs text-muted truncate">{session.user?.email}</p>
-                      {(session.user as any)?.clId && (
-                        <p className="text-[10px] font-mono text-muted mt-0.5">
-                          {(session.user as any).clId}
-                        </p>
+                      {(session.user as any)?.userId && (
+                        <p className="text-[10px] font-mono text-muted mt-0.5">{(session.user as any).userId}</p>
                       )}
                     </div>
                     <div className="p-1">
                       {session.user?.role === 'admin' && (
-                        <Link
-                          href="/compete/admin"
-                          onClick={() => setProfileOpen(false)}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
-                        >
-                          <Shield size={14} />
-                          Admin Panel
+                        <Link href="/compete/admin" onClick={() => setProfileOpen(false)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors">
+                          <Shield size={14} /> Admin Panel
                         </Link>
                       )}
-                      <Link
-                        href="/profile/me"
-                        onClick={() => setProfileOpen(false)}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted hover:text-fg hover:bg-line rounded-lg transition-colors"
-                      >
+                      <Link href="/profile/me" onClick={() => setProfileOpen(false)} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted hover:text-fg hover:bg-line rounded-lg transition-colors">
                         Profile & Settings
                       </Link>
-                      <button
-                        onClick={() => { signOut({ callbackUrl: '/' }); setProfileOpen(false); }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                      >
-                        <LogOut size={14} />
-                        Sign out
+                      <button onClick={() => { signOut({ callbackUrl: '/' }); setProfileOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                        <LogOut size={14} /> Sign out
                       </button>
                     </div>
                   </div>
@@ -185,65 +146,18 @@ export default function NavBar() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-muted hover:text-fg hover:bg-line border border-transparent hover:border-line-strong transition-all"
-              >
+              <Link href="/login" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-muted hover:text-fg hover:bg-line border border-transparent hover:border-line-strong transition-all">
                 <LogIn size={14} />
                 <span className="hidden sm:block">Sign in</span>
               </Link>
-              <Link
-                href="/signup"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-black text-sm font-bold transition-all"
-              >
+              <Link href="/signup" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-black text-sm font-bold transition-all">
                 <UserPlus size={14} />
                 <span className="hidden sm:block">Sign up</span>
               </Link>
             </div>
           )}
-
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-1.5 rounded-lg hover:bg-line text-muted hover:text-fg transition-colors"
-          >
-            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-          </button>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {mobileOpen && (
-        <div className="md:hidden bg-surface border-t border-line px-4 py-3 space-y-1">
-          {NAV_LINKS.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isActive(href)
-                  ? 'bg-line text-accent'
-                  : 'text-muted hover:text-fg hover:bg-line/60'
-              }`}
-            >
-              <Icon size={16} />
-              {label}
-            </Link>
-          ))}
-          {!session && (
-            <div className="pt-2 border-t border-line space-y-1 mt-1">
-              <Link href="/login" onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-muted hover:text-fg hover:bg-line transition-all">
-                <LogIn size={16} /> Sign in
-              </Link>
-              <Link href="/signup" onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm bg-accent/10 text-accent hover:bg-accent/20 transition-all">
-                <UserPlus size={16} /> Sign up
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
     </nav>
   );
 }

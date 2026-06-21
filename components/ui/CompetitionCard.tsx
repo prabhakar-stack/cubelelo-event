@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { Calendar, Users, Trophy, ChevronRight, Clock } from 'lucide-react';
-import { getPuzzleEmoji, getStatusLabel, getStatusColor } from '@/lib/utils/competition';
+import { getPuzzleEmoji } from '@/lib/utils/competition';
+import StatusChip from '@/components/ui/StatusChip';
 
 // ─── Props shape — decoupled from DB schema ───────────────────────────────────
 
@@ -85,9 +86,7 @@ export default function CompetitionCard({ competition, onRegister }: Competition
           <div className="min-w-0 flex-1">
             <h3 className="font-semibold text-fg text-sm leading-tight truncate pr-8">{name}</h3>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getStatusColor(status)}`}>
-                {getStatusLabel(status)}
-              </span>
+              <StatusChip status={status} />
               <span className="text-[10px] text-muted">
                 {events?.length ? events.join(', ') : puzzleType}
               </span>
