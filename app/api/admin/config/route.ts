@@ -3,12 +3,12 @@
  * PUT  /api/admin/config  { key, value }
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, isAuthError } from '@/lib/adminAuth';
+import { requireRole, isAuthError } from '@/lib/roles';
 import { connectDB } from '@/lib/mongoose';
 import { SiteConfig, DEFAULT_RANK_TIERS } from '@/lib/models/SiteConfig';
 
 export async function GET(req: NextRequest) {
-  const auth = await requireAdmin(req);
+  const auth = await requireRole(['moderator']);
   if (isAuthError(auth)) return auth;
 
   await connectDB();
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const auth = await requireAdmin(req);
+  const auth = await requireRole(['moderator']);
   if (isAuthError(auth)) return auth;
 
   await connectDB();

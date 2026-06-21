@@ -9,9 +9,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import mongoose from 'mongoose';
+import PDFDocument from 'pdfkit';
+import SVGtoPDF from 'svg-to-pdfkit';
 import { connectDB } from '@/lib/mongoose';
 import { Competition, mapEventId } from '@/lib/models/Competition';
 import { Result } from '@/lib/models/Result';
+
+/** Render an SVG string to a PDF buffer at the given point dimensions. */
+function svgToPdfBuffer(svg: string, width: number, height: number): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: [width, height], margin: 0 });
+    const chunks: Buffer[] = [];
+    doc.on('data', (c: Buffer) => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    try {
+      // Strip emoji — pdfkit's standard fonts can't render them.
+      const safe = svg.replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu, '');
+      SVGtoPDF(doc, safe, 0, 0, { width, height, assumePt: true });
+    } catch (e) {
+      reject(e);
+      return;
+    }
+    doc.end();
+  });
+}
 import { PaidParticipant } from '@/lib/models/PaidParticipant';
 import { User } from '@/lib/models/User';
 
@@ -202,11 +224,12 @@ export async function GET(
       type: certType,
     });
 
-    const filename = `certificate-${clid}-${compId}-${requestedEvent}.svg`.replace(/[^a-zA-Z0-9\-_.]/g, '_');
+    const filename = `certificate-${clid}-${compId}-${requestedEvent}.pdf`.replace(/[^a-zA-Z0-9\-_.]/g, '_');
+    const pdf = await svgToPdfBuffer(svg, 900, 640);
 
-    return new NextResponse(svg, {
+    return new NextResponse(pdf as any, {
       headers: {
-        'Content-Type': 'image/svg+xml',
+        'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Cache-Control': 'private, max-age=3600',
       },

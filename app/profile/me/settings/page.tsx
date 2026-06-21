@@ -49,6 +49,8 @@ export default function SettingsPage() {
     privacyPublic: true,
   });
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [resendState, setResendState] = useState<'idle' | 'sent'>('idle');
   const [oldPw, setOldPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
@@ -73,6 +75,7 @@ export default function SettingsPage() {
             notifPush: d.user.notifPush ?? true,
             privacyPublic: d.user.privacyPublic ?? true,
           });
+          setEmailVerified(d.user.emailVerified ?? false);
           // Account theme is the source of truth across devices; fall back to local.
           const t: Theme = d.user.theme === 'light' || d.user.theme === 'dark'
             ? d.user.theme : getStoredTheme();
@@ -117,6 +120,10 @@ export default function SettingsPage() {
     }
   };
 
+  const resendVerification = async () => {
+    try { await fetch('/api/auth/resend-verification', { method: 'POST' }); setResendState('sent'); } catch { /* ignore */ }
+  };
+
   const changePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwStatus(null);
@@ -157,6 +164,22 @@ export default function SettingsPage() {
           </Link>
           <h1 className="text-xl font-bold text-fg">Account Settings</h1>
         </div>
+
+        {/* Email verification notice */}
+        {emailVerified === false && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex items-center gap-3">
+            <AlertCircle size={18} className="text-amber-400 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm text-amber-400 font-medium">Email not verified</p>
+              <p className="text-xs text-muted">Verify your email to register for paid competitions.</p>
+            </div>
+            {resendState === 'sent' ? (
+              <span className="text-xs text-emerald-400 font-medium">Sent ✓</span>
+            ) : (
+              <button onClick={resendVerification} className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-400 text-xs font-bold hover:bg-amber-500/30 transition-all">Resend</button>
+            )}
+          </div>
+        )}
 
         {/* Password */}
         <Section title="Change Password" icon={Lock}>

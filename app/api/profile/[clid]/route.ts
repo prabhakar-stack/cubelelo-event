@@ -1,5 +1,6 @@
 // GET /api/profile/[clid] — public profile by userId (clid)
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/mongoose';
 import { User } from '@/lib/models/User';
 import { EventBest } from '@/lib/models/EventBest';
@@ -20,6 +21,21 @@ export async function GET(
       .select('-password -token -email')
       .lean() as any;
     if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+    // Privacy: hide PBs/history from non-owners (and non-admins) when private.
+    const session = await auth();
+    const viewerId = (session?.user as any)?.userId;
+    const isOwner = !!viewerId && viewerId === clid;
+    const isAdmin = session?.user?.role === 'admin';
+    if (user.privacyPublic === false && !isOwner && !isAdmin) {
+      return NextResponse.json({
+        user: { userId: user.userId, name: user.name, profilePicture: user.profilePicture, country: user.country, wcaId: user.wcaId },
+        private: true,
+        pbs: [],
+        history: [],
+        streak: 0,
+      });
+    }
 
     const userId = user.userId;
 

@@ -3,12 +3,13 @@
  * PATCH /api/admin/users  body: { userId, action: 'disable'|'enable'|'setRole', role? }
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin, isAuthError } from '@/lib/adminAuth';
+import { requireRole, isAuthError, isRole } from '@/lib/roles';
 import { connectDB } from '@/lib/mongoose';
 import { User } from '@/lib/models/User';
+import { logAudit } from '@/lib/audit';
 
 export async function GET(req: NextRequest) {
-  const auth = await requireAdmin(req);
+  const auth = await requireRole(['moderator']);
   if (isAuthError(auth)) return auth;
   await connectDB();
   const { searchParams } = new URL(req.url);
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const auth = await requireAdmin(req);
+  const auth = await requireRole(['moderator']);
   if (isAuthError(auth)) return auth;
   await connectDB();
   const { userId, action, role } = await req.json();
@@ -48,9 +49,15 @@ export async function PATCH(req: NextRequest) {
 
   if (action === 'disable') user.active = false;
   else if (action === 'enable') user.active = true;
-  else if (action === 'setRole' && role) user.role = role;
+  else if (action === 'setRole') {
+    // Only full admins may change roles, and only to a known role.
+    if (auth.role !== 'admin') return NextResponse.json({ error: 'Only admins can change roles' }, { status: 403 });
+    if (!isRole(role)) return NextResponse.json({ error: 'Invalid role' }, { status: 400 });
+    user.role = role;
+  }
   else return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
 
   await user.save();
+  await logAudit(auth.session, `user.${action}`, { target: userId, meta: { role: user.role, active: user.active } });
   return NextResponse.json({ ok: true, userId: user.userId, active: user.active, role: user.role });
 }

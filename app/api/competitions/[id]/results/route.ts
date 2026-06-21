@@ -106,15 +106,32 @@ export async function POST(
     const bestTime = Math.min(...adjusted);
     const averageTime = computeAo5(adjusted);
 
-    // ── Statistical outlier flag (PRD §3.4 — Must Have) ─────────────────────
-    // Flag if result is >30% faster than user's historical best for this event
+    // ── Anti-cheat flags (PRD §3.4 — Must Have) ─────────────────────────────
     let flagStatus: 'ok' | 'flagged' = 'ok';
+    let flagReason: string | undefined;
+
+    // Statistical outlier: >30% faster than user's historical best for this event
     const historicalBest = await EventBest.findOne({ userId: user.userId, eventId }).lean() as any;
     if (historicalBest?.bestSingle) {
       const histMs = parseInt(historicalBest.bestSingle);
       if (histMs > 0 && histMs < DNF && bestTime < DNF) {
         const improvement = (histMs - bestTime) / histMs;
-        if (improvement > 0.30) flagStatus = 'flagged'; // >30% faster
+        if (improvement > 0.30) {
+          flagStatus = 'flagged';
+          flagReason = `Result ${(improvement * 100).toFixed(0)}% faster than historical best`;
+        }
+      }
+    }
+
+    // Submission timing plausibility: wall-clock since the round opened must
+    // exceed the total of the (non-DNF) solve times — you can't submit faster
+    // than you can physically solve.
+    if (comp.roundOpenedAt) {
+      const elapsed = Date.now() - new Date(comp.roundOpenedAt).getTime();
+      const solveSum = adjusted.filter(v => !isDNF(v)).reduce((a, b) => a + b, 0);
+      if (elapsed > 0 && solveSum > 0 && elapsed < solveSum) {
+        flagStatus = 'flagged';
+        flagReason = flagReason ?? 'Submitted faster than physically possible since the round opened';
       }
     }
 
@@ -141,9 +158,7 @@ export async function POST(
           plus2Array,
           'videoLink.videoLink': videoLink,
           'status.verified': flagStatus,
-          'status.flagReason': flagStatus === 'flagged'
-            ? `Result ${((1 - bestTime / (historicalBest?.bestSingle ? parseInt(historicalBest.bestSingle) : bestTime)) * 100).toFixed(0)}% faster than historical best`
-            : undefined,
+          'status.flagReason': flagReason,
         },
       },
       { upsert: true, new: true }

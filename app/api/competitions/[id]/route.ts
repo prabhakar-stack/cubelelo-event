@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/mongoose';
 import { Competition, toApiShape } from '@/lib/models/Competition';
+import { logAudit } from '@/lib/audit';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -65,6 +66,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     ).select('-events.scramble').lean();
 
     if (!doc) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    await logAudit(session, 'competition.update', { target: id, meta: { fields: Object.keys(update), status: update.status } });
     return NextResponse.json({ competition: toApiShape(doc) });
   } catch (err) {
     console.error('[PATCH /api/competitions/[id]]', err);
@@ -90,6 +92,7 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
     );
 
     if (!doc) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    await logAudit(session, 'competition.cancel', { target: id });
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('[DELETE /api/competitions/[id]]', err);

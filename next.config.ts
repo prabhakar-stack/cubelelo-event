@@ -21,8 +21,8 @@ const nextConfig: NextConfig = {
   },
   output: 'standalone',
   transpilePackages: ['motion', 'cubing'],
-  // razorpay is a server-side package, exclude from webpack bundling
-  serverExternalPackages: ['razorpay'],
+  // server-side packages excluded from webpack bundling
+  serverExternalPackages: ['razorpay', 'pdfkit'],
   webpack: (config, {dev, isServer}) => {
     // HMR is disabled in AI Studio via DISABLE_HMR env var.
     // Do not modify—file watching is disabled to prevent flickering during agent edits.

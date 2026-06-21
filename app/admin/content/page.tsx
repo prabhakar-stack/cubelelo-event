@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Bell, Save, CheckCircle, Trophy, Plus, Trash2, Loader2 } from 'lucide-react';
+import { Bell, Save, CheckCircle, Trophy, Plus, Trash2, Loader2, CalendarClock } from 'lucide-react';
 
 interface RankTier { name: string; maxMs: number; }
 
@@ -35,10 +35,13 @@ export default function AdminContent() {
   const [tiersSaved, setTiersSaved] = useState(false);
   const [tiersLoading, setTiersLoading] = useState(true);
   const [tiersSaving, setTiersSaving] = useState(false);
+  const [freezeDate, setFreezeDate] = useState('');
+  const [freezeSaved, setFreezeSaved] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session || (session.user.role !== 'admin' && session.user.email !== 'prabhakar@cubelelo.com')) {
+    const allowed = session && (session.user.role === 'admin' || session.user.role === 'moderator' || session.user.email === 'prabhakar@cubelelo.com');
+    if (!allowed) {
       router.push('/login'); return;
     }
     setAnnouncement(localStorage.getItem('cl_announcement') ?? '');
@@ -47,12 +50,26 @@ export default function AdminContent() {
       .then(d => { if (d.value) setTiers(d.value); })
       .catch(() => null)
       .finally(() => setTiersLoading(false));
+    fetch('/api/admin/config?key=freezeDate')
+      .then(r => r.json())
+      .then(d => { if (typeof d.value === 'string') setFreezeDate(d.value.slice(0, 10)); })
+      .catch(() => null);
   }, [session, status, router]);
 
   const saveBanner = () => {
     localStorage.setItem('cl_announcement', announcement);
     setBannerSaved(true);
     setTimeout(() => setBannerSaved(false), 2000);
+  };
+
+  const saveFreeze = async () => {
+    await fetch('/api/admin/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'freezeDate', value: freezeDate || null }),
+    });
+    setFreezeSaved(true);
+    setTimeout(() => setFreezeSaved(false), 2000);
   };
 
   const saveTiers = async () => {
@@ -109,6 +126,24 @@ export default function AdminContent() {
             {bannerSaved ? <CheckCircle size={15} /> : <Save size={15} />}
             {bannerSaved ? 'Saved!' : 'Save Banner'}
           </button>
+        </div>
+
+        {/* Migration freeze date */}
+        <div className="bg-surface border border-line rounded-2xl p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <CalendarClock size={15} className="text-amber-400" />
+            <h2 className="font-semibold">Migration Freeze Date</h2>
+          </div>
+          <p className="text-xs text-muted">Shows a sitewide banner urging users to claim their accounts before this date. Leave blank to hide.</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <input type="date" value={freezeDate} onChange={e => setFreezeDate(e.target.value)}
+              className="px-3 py-2.5 bg-bg border border-line-strong rounded-xl text-sm text-fg focus:outline-none focus:border-accent transition-colors" />
+            <button onClick={saveFreeze}
+              className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-hover text-black font-bold text-sm rounded-xl transition-all">
+              {freezeSaved ? <CheckCircle size={15} /> : <Save size={15} />} {freezeSaved ? 'Saved!' : 'Save Date'}
+            </button>
+            {freezeDate && <button onClick={() => setFreezeDate('')} className="text-xs text-muted hover:text-fg">clear</button>}
+          </div>
         </div>
 
         {/* Rank Tier Config */}

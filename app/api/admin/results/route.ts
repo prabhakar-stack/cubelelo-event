@@ -4,22 +4,15 @@
  *   Body: { resultId, action: 'verify'|'plus2'|'dnf'|'dq'|'override', value?, remark? }
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/mongoose';
 import { Result } from '@/lib/models/Result';
-
-const ADMIN_EMAILS = ['prabhakar@cubelelo.com', process.env.NEXTAUTH_ADMIN_EMAIL].filter(Boolean);
-
-async function requireAdmin(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  if (!ADMIN_EMAILS.includes(session.user.email) && session.user.role !== 'admin') return null;
-  return session;
-}
+import { logAudit } from '@/lib/audit';
+import { requireRole, isAuthError } from '@/lib/roles';
 
 export async function GET(req: NextRequest) {
-  const session = await requireAdmin(req);
-  if (!session) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const a = await requireRole(['judge']);
+  if (isAuthError(a)) return a;
+  const session = a.session;
   try {
     await connectDB();
     const { searchParams } = new URL(req.url);
@@ -39,8 +32,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await requireAdmin(req);
-  if (!session) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const a = await requireRole(['judge']);
+  if (isAuthError(a)) return a;
+  const session = a.session;
   try {
     await connectDB();
     const body = await req.json();
@@ -76,6 +70,7 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
     await result.save();
+    await logAudit(session, `result.${action}`, { target: resultId, reason: remark, meta: { value } });
     return NextResponse.json({ ok: true, result });
   } catch (err) {
     console.error('[PATCH admin/results]', err);

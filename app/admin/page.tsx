@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Shield, Trophy, Users, CreditCard, FileText,
-  Database, AlertCircle, Loader2, TrendingUp, Tag
+  Database, AlertCircle, Loader2, TrendingUp, Tag, ScrollText
 } from 'lucide-react';
 
 const NAV = [
@@ -15,6 +15,7 @@ const NAV = [
   { href: '/admin/promos', icon: Tag, label: 'Promo Codes', color: 'text-pink-400', bg: 'bg-pink-400/10 border-pink-400/20', desc: 'Discount codes, usage limits' },
   { href: '/admin/content', icon: FileText, label: 'Content', color: 'text-lime', bg: 'bg-lime/10 border-lime/20', desc: 'Banners, announcements' },
   { href: '/admin/migration', icon: Database, label: 'Migration', color: 'text-purple-400', bg: 'bg-purple-400/10 border-purple-400/20', desc: 'Import users, claim status' },
+  { href: '/admin/audit', icon: ScrollText, label: 'Audit Log', color: 'text-purple-300', bg: 'bg-purple-300/10 border-purple-300/20', desc: 'Every admin action, logged' },
   { href: '/compete/admin', icon: Shield, label: 'Legacy Admin', color: 'text-muted', bg: 'bg-elevated border-line-strong', desc: 'Original competition panel' },
 ];
 

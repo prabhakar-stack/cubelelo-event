@@ -7,11 +7,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Timer, Trophy, Dumbbell, BarChart3, LogIn, LogOut, ChevronDown,
-  Shield, UserPlus, Search, Bell,
+  Shield, UserPlus, Search,
 } from 'lucide-react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import LiveBadge from '@/components/ui/LiveBadge';
 import StreakFlame from '@/components/ui/StreakFlame';
+import NotificationBell from '@/components/ui/NotificationBell';
 
 const NAV_LINKS = [
   { href: '/practice', label: 'Practice', icon: Dumbbell },
@@ -84,11 +85,7 @@ export default function NavBar() {
           <LiveBadge />
           <StreakFlame />
 
-          {session && (
-            <Link href="/profile/me/settings" aria-label="Notifications" className="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-line transition-colors">
-              <Bell size={17} />
-            </Link>
-          )}
+          <NotificationBell />
 
           <ThemeToggle />
 

@@ -41,6 +41,7 @@ export default function PublicProfilePage() {
   const [pbs, setPbs] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [streak, setStreak] = useState(0);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   useEffect(() => {
     if (!clid) return;
@@ -55,6 +56,7 @@ export default function PublicProfilePage() {
           setPbs(d.pbs ?? []);
           setHistory(d.history ?? []);
           setStreak(d.streak ?? 0);
+          setIsPrivate(!!d.private);
         }
       })
       .catch(() => {})
@@ -97,6 +99,12 @@ export default function PublicProfilePage() {
         <Link href="/compete" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-fg mb-5 transition-colors">
           <ArrowLeft size={13} /> All Competitors
         </Link>
+
+        {isPrivate && (
+          <div className="bg-elevated border border-line-strong rounded-xl px-4 py-3 mb-5 text-sm text-muted flex items-center gap-2">
+            <Shield size={15} className="text-muted" /> This profile is private — personal bests and competition history are hidden.
+          </div>
+        )}
 
         {/* Profile Header */}
         <div className="bg-surface border border-line rounded-2xl overflow-hidden mb-5">
@@ -182,7 +190,7 @@ export default function PublicProfilePage() {
               {history.length > 0 ? (
                 <div className="space-y-2">
                   {history.map((h: any) => (
-                    <Link key={h.competitionId} href={`/compete/${h.competitionId}/results`}
+                    <Link key={h.competitionId} href={`/competitions/${h.competitionId}/results`}
                       className="block bg-bg rounded-xl px-4 py-3 hover:bg-elevated transition-colors">
                       <p className="text-xs font-semibold text-fg truncate">{h.competitionName}</p>
                       <div className="flex gap-2 flex-wrap mt-1">

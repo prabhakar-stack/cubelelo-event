@@ -114,10 +114,15 @@ export async function PATCH(req: NextRequest) {
 
   // Preference / profile fields
   const allowed = ['wcaId', 'city', 'country', 'mobile', 'dob', 'gender', 'socialMedia',
-    'privacyPublic', 'notifEmail', 'notifPush', 'theme'];
+    'privacyPublic', 'notifEmail', 'notifPush', 'theme', 'profilePicture'];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
+  }
+
+  // Avatars are stored as data URLs in-DB — keep them small.
+  if (typeof update.profilePicture === 'string' && update.profilePicture.length > 500_000) {
+    return NextResponse.json({ error: 'Image too large — please use a smaller photo.' }, { status: 413 });
   }
 
   // Handle name update — legacy docs store `name` as a flat string (e.g. "Prabhakar Patel").

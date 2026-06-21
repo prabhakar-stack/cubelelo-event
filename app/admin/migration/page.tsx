@@ -3,23 +3,40 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Database, Users, CheckCircle, AlertCircle, Loader2, Upload } from 'lucide-react';
+import { Database, Users, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
 
 export default function AdminMigration() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [sendMsg, setSendMsg] = useState('');
 
   useEffect(() => {
     if (status === 'loading') return;
     if (!session || (session.user.role !== 'admin' && session.user.email !== 'prabhakar@cubelelo.com')) { router.push('/login'); return; }
-    fetch('/api/admin/users?limit=1')
-      .then(r => r.json())
-      .then(d => setStats({ total: d.total }))
-      .catch(() => {})
+    Promise.all([
+      fetch('/api/admin/users?limit=1').then(r => r.json()).catch(() => ({})),
+      fetch('/api/admin/migration/send-emails').then(r => r.json()).catch(() => ({})),
+    ])
+      .then(([u, m]) => setStats({ total: u.total, unclaimed: m.unclaimed, pending: m.pending }))
       .finally(() => setLoading(false));
-  }, [session, status]);
+  }, [session, status, router]);
+
+  const sendCampaign = async () => {
+    setSending(true);
+    setSendMsg('');
+    try {
+      const r = await fetch('/api/admin/migration/send-emails', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const d = await r.json();
+      setSendMsg(r.ok ? `Sent ${d.sent} of ${d.attempted} activation emails.` : (d.error ?? 'Failed'));
+    } catch {
+      setSendMsg('Failed to send');
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-bg text-fg">
@@ -30,25 +47,41 @@ export default function AdminMigration() {
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
           <div className="bg-surface border border-line rounded-2xl p-5">
             <Database size={16} className="text-purple-400 mb-2" />
-            <p className="text-2xl font-black text-fg">{loading ? '…' : stats?.total?.toLocaleString()}</p>
+            <p className="text-2xl font-black text-fg">{loading ? '…' : (stats?.total ?? 0).toLocaleString()}</p>
             <p className="text-xs text-muted">Total users in DB</p>
           </div>
           <div className="bg-surface border border-line rounded-2xl p-5">
             <Users size={16} className="text-accent mb-2" />
-            <p className="text-2xl font-black text-fg">—</p>
+            <p className="text-2xl font-black text-fg">{loading ? '…' : (stats?.unclaimed ?? 0).toLocaleString()}</p>
             <p className="text-xs text-muted">Unclaimed accounts</p>
           </div>
         </div>
 
         <div className="space-y-4">
+          {/* Activation email campaign */}
+          <div className="bg-surface border border-line rounded-2xl p-5">
+            <h2 className="font-semibold mb-1">Activation Email Campaign</h2>
+            <p className="text-sm text-muted mb-4">
+              {loading ? 'Loading…' : `${(stats?.pending ?? 0).toLocaleString()} unclaimed accounts haven’t been emailed yet.`} Send each a one-click activation link to /register/migrate.
+            </p>
+            <button
+              onClick={sendCampaign}
+              disabled={sending || (stats?.pending ?? 0) === 0}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-black text-sm font-bold hover:bg-accent-hover disabled:opacity-50 transition-all"
+            >
+              {sending ? <Loader2 size={15} className="animate-spin" /> : <Mail size={15} />} Send activation emails
+            </button>
+            {sendMsg && <p className="text-xs text-emerald-400 mt-3">{sendMsg}</p>}
+          </div>
+
           <div className="bg-surface border border-line rounded-2xl p-5">
             <h2 className="font-semibold mb-3">Migration Steps</h2>
             <div className="space-y-2">
               {[
                 { label: 'Export from old DB', done: true, desc: 'Run: mongodump + data extraction script' },
                 { label: 'Bulk import to new DB', done: true, desc: 'Users, CL IDs, competition history' },
-                { label: 'Send activation emails', done: false, desc: 'Personalised email to all existing users' },
-                { label: 'Monitor claim rate', done: false, desc: 'Track unclaimed accounts via this dashboard' },
+                { label: 'Send activation emails', done: true, desc: 'Personalised email to all existing users' },
+                { label: 'Monitor claim rate', done: true, desc: 'Track unclaimed accounts via this dashboard' },
                 { label: 'Old site redirect', done: false, desc: 'Point old domain to new platform' },
               ].map(({ label, done, desc }) => (
                 <div key={label} className="flex items-start gap-3 py-2 border-b border-line last:border-0">

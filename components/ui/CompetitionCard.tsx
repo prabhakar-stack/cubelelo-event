@@ -155,14 +155,14 @@ export default function CompetitionCard({ competition, onRegister }: Competition
         {/* CTA */}
         {isCompleted ? (
           <Link
-            href={`/compete/${id}/results`}
+            href={`/competitions/${id}/results`}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-elevated hover:bg-line border border-line-strong text-sm font-medium text-muted hover:text-fg transition-all"
           >
             View Results <ChevronRight size={14} />
           </Link>
         ) : isLive ? (
           <Link
-            href={`/compete/${id}`}
+            href={`/competitions/${id}/round/1`}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-sm font-bold text-red-400 transition-all"
           >
             Join Live Room <ChevronRight size={14} />

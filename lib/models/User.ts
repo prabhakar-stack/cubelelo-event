@@ -18,6 +18,10 @@ export interface IUser extends Document {
   socialMedia?: Record<string, string>;
   resetToken?: string;
   resetTokenExpiry?: Date;
+  emailVerified?: boolean;
+  verifyToken?: string;
+  verifyTokenExpiry?: Date;
+  migrationEmailSentAt?: Date;
   privacyPublic?: boolean;
   wcaVerified?: boolean;
   notifEmail?: boolean;
@@ -49,6 +53,10 @@ const UserSchema = new Schema<IUser>(
     socialMedia: { type: Schema.Types.Mixed },
     resetToken: { type: String, select: false },
     resetTokenExpiry: { type: Date, select: false },
+    emailVerified: { type: Boolean, default: false },
+    verifyToken: { type: String, select: false },
+    verifyTokenExpiry: { type: Date, select: false },
+    migrationEmailSentAt: { type: Date },
     privacyPublic: { type: Boolean, default: true },
     wcaVerified: { type: Boolean, default: false },
     notifEmail: { type: Boolean, default: true },

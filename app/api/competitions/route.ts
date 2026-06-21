@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { connectDB } from '@/lib/mongoose';
 import { Competition, toApiShape } from '@/lib/models/Competition';
+import { logAudit } from '@/lib/audit';
 
 // Map UI status filter → real DB query
 function buildStatusFilter(uiStatus: string | null): Record<string, any> {
@@ -175,6 +176,7 @@ export async function POST(req: NextRequest) {
       end: resolvedEnd,
     });
 
+    await logAudit(session, 'competition.create', { target: newId, meta: { name: resolvedName } });
     return NextResponse.json({ competition: toApiShape(doc.toObject()) }, { status: 201 });
   } catch (err) {
     console.error('[POST /api/competitions]', err);

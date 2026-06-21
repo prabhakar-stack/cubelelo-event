@@ -9,6 +9,7 @@ import {
   User, Edit2, Save, X, ExternalLink, Trophy,
   MapPin, Calendar, Phone, Shield, CheckCircle, Clock
 } from 'lucide-react';
+import AvatarUpload from '@/components/ui/AvatarUpload';
 
 interface UserProfile {
   _id: string;
@@ -165,6 +166,17 @@ export default function MyProfilePage() {
                 )}
               </div>
             </div>
+
+            {/* Avatar upload (edit mode) */}
+            {editing && (
+              <div className="mb-4">
+                <AvatarUpload
+                  current={profile?.profilePicture}
+                  name={displayName}
+                  onChange={url => setProfile(p => (p ? { ...p, profilePicture: url } : p))}
+                />
+              </div>
+            )}
 
             {/* Name + IDs */}
             {editing ? (

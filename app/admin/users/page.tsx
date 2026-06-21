@@ -14,9 +14,12 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState('');
 
+  const isAdmin = session?.user?.role === 'admin' || session?.user?.email === 'prabhakar@cubelelo.com';
+
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session || (session.user.role !== 'admin' && session.user.email !== 'prabhakar@cubelelo.com')) { router.push('/login'); return; }
+    const allowed = session && (session.user.role === 'admin' || session.user.role === 'moderator' || session.user.email === 'prabhakar@cubelelo.com');
+    if (!allowed) { router.push('/login'); return; }
     search('');
   }, [session, status]);
 
@@ -79,9 +82,20 @@ export default function AdminUsers() {
                       <td className="px-4 py-3 font-mono text-muted hidden sm:table-cell">{u.userId}</td>
                       <td className="px-4 py-3 font-mono text-muted hidden md:table-cell">{u.wcaId || '—'}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                          u.role === 'admin' ? 'border-red-500/30 text-red-400 bg-red-500/10' : 'border-line-strong text-muted'
-                        }`}>{u.role}</span>
+                        {isAdmin ? (
+                          <select
+                            value={u.role ?? 'user'}
+                            onChange={e => handleAction(u.userId, 'setRole', e.target.value)}
+                            disabled={busy === u.userId}
+                            className="text-[11px] bg-elevated border border-line-strong rounded-lg px-1.5 py-1 text-fg focus:outline-none focus:border-accent disabled:opacity-50"
+                          >
+                            {['user', 'judge', 'moderator', 'admin'].map(r => <option key={r} value={r}>{r}</option>)}
+                          </select>
+                        ) : (
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                            u.role === 'admin' ? 'border-red-500/30 text-red-400 bg-red-500/10' : 'border-line-strong text-muted'
+                          }`}>{u.role}</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full border ${

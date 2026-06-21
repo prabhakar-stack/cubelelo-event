@@ -127,7 +127,7 @@ function LiveBanner() {
       </div>
       <div className="grid sm:grid-cols-3 gap-3">
         {comps.map(c => (
-          <Link key={c._id} href={`/compete/${c._id}`}
+          <Link key={c._id} href={`/competitions/${c._id}/round/1`}
             className="flex items-center justify-between px-4 py-3 rounded-xl bg-red-500/5 border border-red-500/20 hover:bg-red-500/10 transition-all">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-fg truncate">{c.name}</p>
@@ -166,7 +166,7 @@ function UpcomingComps() {
   return (
     <div className="grid sm:grid-cols-2 gap-3">
       {comps.map(c => (
-        <Link key={c._id} href={`/compete/${c._id}`}
+        <Link key={c._id} href={`/competitions/${c._id}/round/1`}
           className="flex items-center justify-between px-4 py-4 rounded-xl bg-surface border border-line hover:border-line-strong hover:bg-elevated transition-all">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-fg truncate">{c.name}</p>
@@ -209,7 +209,7 @@ function PastResults() {
       ) : (
         <div className="grid sm:grid-cols-3 gap-3">
           {comps.map(c => (
-            <Link key={c._id} href={`/compete/${c._id}/results`}
+            <Link key={c._id} href={`/competitions/${c._id}/results`}
               className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface border border-line hover:border-line-strong hover:bg-elevated transition-all">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-fg truncate">{c.name}</p>

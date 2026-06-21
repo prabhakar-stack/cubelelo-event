@@ -178,7 +178,7 @@ export default function CompetitionDetailPage({ params }: PageParams) {
               )}
               {regError && <p className="text-xs text-red-400 max-w-[160px]">{regError}</p>}
               {(isLive || (registered && comp.status !== 'COMPLETED')) && (
-                <Link href={`/compete/${id}`}
+                <Link href={`/competitions/${id}/round/1`}
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-line-strong text-fg text-sm hover:bg-elevated transition-all">
                   <Zap size={14} /> {isLive ? 'Enter Live Room' : 'Competition Room'}
                 </Link>
@@ -321,11 +321,11 @@ export default function CompetitionDetailPage({ params }: PageParams) {
         {/* View lobby CTA */}
         {registered && (
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={`/compete/${id}/lobby`}
+            <Link href={`/competitions/${id}/lobby`}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-line-strong text-sm text-muted hover:text-fg hover:bg-elevated transition-all">
               <Users size={14} /> View Lobby
             </Link>
-            <Link href={`/compete/${id}/results`}
+            <Link href={`/competitions/${id}/results`}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-line-strong text-sm text-muted hover:text-fg hover:bg-elevated transition-all">
               <Trophy size={14} /> Results
             </Link>

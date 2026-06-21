@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, isAuthError } from '@/lib/adminAuth';
 import { connectDB } from '@/lib/mongoose';
 import { Order } from '@/lib/models/Order';
+import { logAudit } from '@/lib/audit';
 
 export async function GET(req: NextRequest) {
   const auth = await requireAdmin(req);
@@ -46,5 +47,6 @@ export async function PATCH(req: NextRequest) {
   order.refundStatus = 'requested';
   order.refundReason = reason ?? 'Admin refund';
   await order.save();
+  await logAudit(auth.session, 'payment.refund', { target: orderId, reason: order.refundReason });
   return NextResponse.json({ ok: true, message: 'Refund marked as requested. Process in Razorpay dashboard.' });
 }

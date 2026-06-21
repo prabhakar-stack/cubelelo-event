@@ -95,6 +95,14 @@ export async function POST(
       return NextResponse.json({ ok: true, free: true });
     }
 
+    // Paid registration requires a verified email.
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { error: 'Please verify your email before registering for a paid competition. Check your inbox or resend from Settings.', code: 'EMAIL_UNVERIFIED' },
+        { status: 403 },
+      );
+    }
+
     // ── Paid competition — create Razorpay order ──────────────────────────────
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;

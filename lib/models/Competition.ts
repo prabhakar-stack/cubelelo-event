@@ -85,6 +85,12 @@ export interface ICompetition extends Document {
     poolTotal?: number;     // paise
     distribution?: 'uniform' | 'linear' | 'log';
   }[];
+  // ─── Round state ───
+  roundOpenedAt?: Date;
+  roundClosedAt?: Date;
+  advancementCount?: number;
+  currentRound?: number;
+  qualifiedUserIds?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -120,6 +126,12 @@ const CompetitionSchema = new Schema<ICompetition>(
     maxEntries:  { type: Number, default: 100 },
     rounds:      { type: Number, default: 1 },
     prizes:      { type: [PrizeTierSchema], default: [] },
+    // ─── Round state ───
+    roundOpenedAt:    { type: Date },
+    roundClosedAt:    { type: Date },
+    advancementCount: { type: Number, default: 16 },
+    currentRound:     { type: Number, default: 1 },
+    qualifiedUserIds: { type: [String], default: [] },
   },
   {
     timestamps: true,
@@ -204,7 +216,9 @@ export function toApiShape(doc: any) {
     rules: (() => { try { return JSON.parse(doc.rules ?? '[]'); } catch { return []; } })(),
     faqs:  (() => { try { return JSON.parse(doc.faqs  ?? '[]'); } catch { return []; } })(),
     rounds: doc.rounds ?? 1,
-    currentRound: 1,
+    currentRound: doc.currentRound ?? 1,
+    qualifiedUserIds: doc.qualifiedUserIds ?? [],
+    roundOpenedAt: doc.roundOpenedAt ?? null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };

@@ -22,7 +22,7 @@ export default function LiveBadge() {
   if (!liveId) return null;
   return (
     <Link
-      href={`/compete/${liveId}`}
+      href={`/competitions/${liveId}/round/1`}
       className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all"
     >
       <span className="relative flex h-1.5 w-1.5">

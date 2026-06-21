@@ -4,8 +4,10 @@
  * Same logic as the credentials provider registration.
  */
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { connectDB } from '@/lib/mongoose';
 import { User } from '@/lib/models/User';
+import { sendEmail, emailLayout, baseUrl } from '@/lib/email';
 
 function generateCLID(): string {
   const year = new Date().getFullYear().toString().slice(-2);
@@ -41,6 +43,8 @@ export async function POST(req: NextRequest) {
       attempts++;
     }
 
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+
     const user = await User.create({
       email: email.toLowerCase().trim(),
       password: hashed,
@@ -49,6 +53,20 @@ export async function POST(req: NextRequest) {
       country: userState ?? 'IN',
       role: 'user',
       active: true,
+      emailVerified: false,
+      verifyToken,
+      verifyTokenExpiry: new Date(Date.now() + 24 * 3600_000),
+    });
+
+    const verifyUrl = `${baseUrl()}/verify-email?token=${verifyToken}`;
+    await sendEmail({
+      to: user.email,
+      subject: 'Verify your Cubelelo email',
+      html: emailLayout(
+        'Confirm your email',
+        '<p>Welcome to Cubelelo Events! Confirm your email to register for paid competitions. This link expires in 24 hours.</p>',
+        { label: 'Verify email', url: verifyUrl },
+      ),
     });
 
     return NextResponse.json({
