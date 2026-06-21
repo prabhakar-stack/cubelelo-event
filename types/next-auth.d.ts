@@ -1,17 +1,14 @@
-import 'next-auth';
+import { DefaultSession } from 'next-auth';
 
+// Single source of truth for NextAuth type augmentation.
 declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
       role: string;
       userId?: string | null;
-    };
+    } & DefaultSession['user'];
   }
-
   interface User {
     role?: string;
     userId?: string | null;
