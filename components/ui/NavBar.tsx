@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Timer, Trophy, Dumbbell, BarChart3, LogIn, LogOut, ChevronDown,
-  Shield, UserPlus, Search,
+  Shield, UserPlus, Search, Boxes,
 } from 'lucide-react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import LiveBadge from '@/components/ui/LiveBadge';
@@ -15,6 +15,7 @@ import StreakFlame from '@/components/ui/StreakFlame';
 import NotificationBell from '@/components/ui/NotificationBell';
 
 const NAV_LINKS = [
+  { href: '/problems', label: 'Train', icon: Boxes },
   { href: '/practice', label: 'Practice', icon: Dumbbell },
   { href: '/competitions', label: 'Compete', icon: Trophy },
   { href: '/timer', label: 'Timer', icon: Timer },

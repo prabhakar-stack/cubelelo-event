@@ -20,19 +20,39 @@
   --color-lime:         #a3fa00;
 }
 
-/* Light theme — override the same custom properties. */
+/* Light theme — tuned for clear hierarchy: greyer canvas, white cards that
+   lift off it (shadow rule below), crisper borders, and a richer accent. */
 html.light {
-  --color-bg:           #f6f8fa;
+  --color-bg:           #eceff3;
   --color-surface:      #ffffff;
-  --color-elevated:     #eef1f4;
-  --color-line:         #d8dee4;
-  --color-line-strong:  #c2cad2;
-  --color-muted:        #5b6570;
-  --color-fg:           #1c2128;
-  --color-accent:       #00b3c4;
-  --color-accent-hover: #0098a8;
-  --color-lime:         #5fb800;
+  --color-elevated:     #f2f4f7;
+  --color-line:         #d3d9e0;
+  --color-line-strong:  #b6c0cb;
+  --color-muted:        #58616b;
+  --color-fg:           #1b1f24;
+  --color-accent:       #0a9eb0;
+  --color-accent-hover: #07808f;
+  --color-lime:         #4f9c00;
 }
 
 html { color-scheme: dark; }
 html.light { color-scheme: light; }
+
+/* ── Light mode: lift cards off the flat canvas with a soft shadow ──────────── */
+html.light .bg-surface {
+  box-shadow: 0 1px 2px rgba(27, 31, 36, 0.06), 0 2px 5px rgba(27, 31, 36, 0.05);
+}
+
+/* ── Dark mode: extra colour — a faint accent ambience behind the page ──────── */
+html:not(.light) body {
+  background-image:
+    radial-gradient(60% 48% at 50% -8%, rgba(0, 219, 231, 0.06), transparent 62%),
+    radial-gradient(50% 40% at 100% 0%, rgba(163, 250, 0, 0.04), transparent 60%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Accent-tinted text selection in both themes. */
+::selection {
+  background: color-mix(in oklab, var(--color-accent) 28%, transparent);
+}

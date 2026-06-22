@@ -27,6 +27,13 @@ export interface IUser extends Document {
   notifEmail?: boolean;
   notifPush?: boolean;
   theme?: 'dark' | 'light';
+  // ─── Gamification & economy ───
+  pointsBalance?: number;
+  streak?: { current: number; longest: number; lastSolvedDate?: string; freezesUsed?: number };
+  streakFreezes?: number;
+  premiumUntil?: Date | null;
+  profileCompletion?: { percent: number; rewardedAt?: Date | null };
+  keybindings?: Record<string, string>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,6 +69,21 @@ const UserSchema = new Schema<IUser>(
     notifEmail: { type: Boolean, default: true },
     notifPush: { type: Boolean, default: true },
     theme: { type: String, enum: ['dark', 'light'], default: 'dark' },
+    // ─── Gamification & economy ───
+    pointsBalance: { type: Number, default: 0 },
+    streak: {
+      current: { type: Number, default: 0 },
+      longest: { type: Number, default: 0 },
+      lastSolvedDate: { type: String },
+      freezesUsed: { type: Number, default: 0 },
+    },
+    streakFreezes: { type: Number, default: 0 },
+    premiumUntil: { type: Date, default: null },
+    profileCompletion: {
+      percent: { type: Number, default: 0 },
+      rewardedAt: { type: Date, default: null },
+    },
+    keybindings: { type: Schema.Types.Mixed },
   },
   {
     timestamps: true,

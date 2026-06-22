@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Search, Dumbbell, Trophy, Clock, BarChart3, User, Settings, Play, CornerDownLeft,
+  Search, Dumbbell, Trophy, Clock, BarChart3, User, Settings, Play, CornerDownLeft, Boxes, Wand2,
 } from 'lucide-react';
 
 type Item = { id: string; type: string; label: string; icon: React.ElementType; run: () => void };
 
 const NAV = [
+  { label: 'Train — problems', icon: Boxes, href: '/problems' },
+  { label: 'Cube solver', icon: Wand2, href: '/solver' },
+  { label: 'Cube builder', icon: Boxes, href: '/builder' },
   { label: 'Practice & daily challenge', icon: Dumbbell, href: '/practice' },
   { label: 'Competitions', icon: Trophy, href: '/competitions' },
   { label: 'Timer', icon: Clock, href: '/timer' },
