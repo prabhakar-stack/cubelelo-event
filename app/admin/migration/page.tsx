@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Database, Users, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
+import { Database, Users, CheckCircle, AlertCircle, Loader2, Mail, AlertTriangle, ChevronRight } from 'lucide-react';
 
 export default function AdminMigration() {
   const { data: session, status } = useSession();
@@ -56,6 +56,15 @@ export default function AdminMigration() {
             <p className="text-xs text-muted">Unclaimed accounts</p>
           </div>
         </div>
+
+        <Link href="/admin/migration/anomalies" className="flex items-center gap-3 bg-surface border border-line rounded-2xl p-4 mb-8 hover:border-line-strong transition-all">
+          <AlertTriangle size={18} className="text-amber-400 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Migration Anomalies</p>
+            <p className="text-xs text-muted">Records with extra fields or failed inserts — full documents preserved for manual review.</p>
+          </div>
+          <ChevronRight size={16} className="text-muted" />
+        </Link>
 
         <div className="space-y-4">
           {/* Activation email campaign */}

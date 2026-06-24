@@ -4,6 +4,7 @@ coverage/
 .DS_Store
 *.log
 .env*
+*.md
 !.env.example
 README.md
 readme.md
